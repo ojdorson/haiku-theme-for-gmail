@@ -3,7 +3,7 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
-## Unreleased
+## 1.0.2 (4 November 2026)
 
 Settings fixes.
 
