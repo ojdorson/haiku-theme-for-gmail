@@ -1,0 +1,1780 @@
+/* Gmail Haiku: make Gmail look like a Haiku (BeOS-lineage) application.
+ *
+ * Reference points: Haiku's interface guidelines and control look, Haiku
+ * Mail (BeMail) and Beam. One plain 12px UI font, light-grey panels with
+ * 1px frames and white/grey bevels, white document areas, the yellow tab
+ * reserved for the window, flat toolbar buttons that bevel on hover.
+ *
+ * Layout of this file:
+ *   1. Tokens              Haiku colours and control gradients
+ *   2. Base                Gmail's Material 3 variables, font, square corners
+ *   3. Haiku controls      buttons, text fields, radios, checkboxes,
+ *                          scrollbars, menus
+ *   4. Injected chrome     classes created by haiku.js (.haiku-*)
+ *   5. BRITTLE             Gmail's obfuscated class names, by area. When a
+ *                          Gmail update breaks the look, the fix is almost
+ *                          always in here.
+ *
+ * Gmail's own stylesheets are large and specific, so nearly everything here
+ * is !important; a few rules add `html body` or `:not(#haiku-x)` purely for
+ * specificity against Gmail's Material button classes.
+ */
+
+/* ============================================================ 1. Tokens */
+:root {
+  --haiku-panel: #d8d8d8;
+  --haiku-panel-light: #e8e8e8;
+  --haiku-panel-dark: #b8b8b8;
+  --haiku-document: #ffffff;
+  --haiku-shine: #ffffff;
+  --haiku-shadow: #989898;
+  --haiku-shadow-dark: #6c6c6c;
+  --haiku-frame: #8c8c8c;
+  --haiku-text: #000000;
+  --haiku-text-dim: #6c6c6c;
+  --haiku-tab: #ffcb00;
+  --haiku-tab-top: #ffe169;
+  --haiku-tab-inactive: #e8e8e8;
+  --haiku-accent: #336698;
+  --haiku-selection: #c8c8c8;   /* Haiku list selection: darkened document grey */
+  --haiku-hover: #f0f0f0;
+  --haiku-menu-selected: #a8a8a8;
+  --haiku-focus: #0000e5;
+  --haiku-mark: #1f2f60;
+  --haiku-font: "Noto Sans", "DejaVu Sans", "Liberation Sans", sans-serif;
+  --haiku-button-bg: linear-gradient(#fbfbfb, #e6e6e6 55%, #dcdcdc);
+  --haiku-button-bg-hover: linear-gradient(#ffffff, #eeeeee 55%, #e4e4e4);
+  --haiku-button-bg-down: linear-gradient(#c4c4c4, #d4d4d4);
+  --haiku-nav-w: 220px; /* folder panel width; haiku.js sets it from the splitter */
+}
+
+/* ============================================================== 2. Base */
+/* Gmail's Material 3 theme is driven by these variables; repointing them
+ * recolours most of the app in one place. */
+html, body, :root {
+  --gm3-sys-color-background: var(--haiku-panel) !important;
+  --gm3-sys-color-surface: var(--haiku-document) !important;
+  --gm3-sys-color-surface-container: var(--haiku-panel) !important;
+  --gm3-sys-color-surface-container-low: var(--haiku-panel) !important;
+  --gm3-sys-color-surface-container-lowest: var(--haiku-document) !important;
+  --gm3-sys-color-surface-container-high: var(--haiku-panel-light) !important;
+  --gm3-sys-color-surface-container-highest: var(--haiku-panel-light) !important;
+  --gm3-sys-color-surface-variant: var(--haiku-panel-light) !important;
+  --gm3-sys-color-on-surface: var(--haiku-text) !important;
+  --gm3-sys-color-on-surface-variant: var(--haiku-text) !important;
+  --gm3-sys-color-primary: var(--haiku-accent) !important;
+  --gm3-sys-color-on-primary: #ffffff !important;
+  --gm3-sys-color-primary-container: var(--haiku-selection) !important;
+  --gm3-sys-color-secondary-container: var(--haiku-selection) !important;
+  --gm3-sys-color-on-secondary-container: var(--haiku-text) !important;
+  --gm3-sys-color-outline: var(--haiku-shadow) !important;
+  --gm3-sys-color-outline-variant: var(--haiku-panel-dark) !important;
+}
+
+html, body {
+  background: var(--haiku-panel) !important;
+  color: var(--haiku-text) !important;
+}
+body { font-size: 12px !important; }
+
+/* One UI font everywhere except the message bodies people wrote. */
+body, body *:not(.ii *):not(.editable *):not([contenteditable] *):not(.material-symbols-outlined):not(.google-symbols):not([class*="icon" i]) {
+  font-family: var(--haiku-font) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Haiku's plain font size across the UI (Gmail sets 14px on inner spans). */
+.aqn.aIH *, tr.zA *, [role="tablist"] *, .G-atb *, .ha, .gE *, .amn *, .vh * {
+  font-size: 12px !important;
+}
+
+/* Haiku is square: no Material pills, no elevation shadows. :where() keeps
+ * this at zero specificity so every Haiku bevel below wins over it. */
+:where(body *:not(input[type="radio"]):not(img[src*="avatar"]):not(img[jid])) {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Material ripples and state layers (the grey hover/press circles). */
+[class*="ripple" i], .VfPpkd-YVzG2b, .VfPpkd-Bz112c-Jh9lGc { display: none !important; }
+html body .asa::before, html body .G-asx::before, html body .T-Jo::before, html body .amH::before, html body .J-JN-M-I::before,
+.T-I.T-I-ax7::before, .T-I.T-I-ax7::after {
+  display: none !important;
+}
+
+a { color: var(--haiku-accent); }
+
+/* ==================================================== 3. Haiku controls */
+
+/* Push buttons: light gradient, 1px dark outline, white inner highlight,
+ * Haiku's 3px corner. */
+[role="button"].T-I,
+button:not([class*="haiku"]):not([role="tab"]):not([aria-label*="Search"]),
+.haiku-button {
+  background: var(--haiku-button-bg) !important;
+  border: 1px solid var(--haiku-frame) !important;
+  border-radius: 3px !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), inset -1px -1px 0 #cfcfcf !important;
+  color: var(--haiku-text) !important;
+}
+[role="button"].T-I:hover,
+button:not([class*="haiku"]):not([role="tab"]):hover,
+.haiku-button:hover {
+  background: var(--haiku-button-bg-hover) !important;
+}
+[role="button"].T-I:active,
+[role="button"].T-I.T-I-JW,
+button:not([class*="haiku"]):active,
+.haiku-button:active {
+  background: var(--haiku-button-bg-down) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+}
+
+/* Text fields: white, sunken, square; blue keyboard-focus frame. */
+input[type="text"], input[type="search"], input[type="email"], input:not([type]),
+textarea, form[role="search"] {
+  background: var(--haiku-document) !important;
+  border: 1px solid var(--haiku-shadow) !important;
+  border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow-dark) !important;
+  color: var(--haiku-text) !important;
+}
+input:focus, textarea:focus, form[role="search"]:focus-within {
+  outline: 1px solid var(--haiku-focus) !important;
+  outline-offset: -1px !important;
+}
+
+/* Radio buttons and checkboxes (Settings, dialogs). */
+input[type="radio"] {
+  appearance: none !important; -webkit-appearance: none !important;
+  width: 13px !important; height: 13px !important; margin: 0 4px 0 0 !important;
+  border: 1px solid var(--haiku-shadow-dark) !important; border-radius: 50% !important;
+  background: radial-gradient(circle at 40% 35%, #ffffff, #e2e2e2) !important;
+  box-shadow: inset 1px 1px 0 #ffffff !important;
+  vertical-align: -2px !important;
+}
+input[type="radio"]:checked {
+  background: radial-gradient(circle, var(--haiku-mark) 0 2.6px, transparent 3.2px), radial-gradient(circle at 40% 35%, #ffffff, #e2e2e2) !important;
+}
+input[type="checkbox"] {
+  appearance: none !important; -webkit-appearance: none !important;
+  width: 13px !important; height: 13px !important; margin: 0 4px 0 0 !important;
+  border: 1px solid var(--haiku-shadow-dark) !important; border-radius: 0 !important;
+  background: var(--haiku-document) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+  vertical-align: -2px !important;
+}
+input[type="checkbox"]:checked {
+  background: center / 9px 9px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath d='M1 4.5 3.5 7 8 1.5' fill='none' stroke='%231f2f60' stroke-width='1.8'/%3E%3C/svg%3E"), var(--haiku-document) !important;
+}
+input[type="radio"]:focus-visible, input[type="checkbox"]:focus-visible {
+  outline: 1px solid var(--haiku-focus) !important;
+  outline-offset: 1px !important;
+}
+
+/* Scrollbars: grey track with a frame, gradient thumb with grip lines,
+ * square arrow buttons. */
+::-webkit-scrollbar {
+  width: 14px !important;
+  height: 14px !important;
+  background: #e6e6e6 !important;
+}
+::-webkit-scrollbar-track {
+  background: linear-gradient(90deg, #cfcfcf, #e9e9e9 30%, #e9e9e9) !important;
+  border-left: 1px solid var(--haiku-shadow) !important;
+}
+::-webkit-scrollbar-track:horizontal {
+  background: linear-gradient(180deg, #cfcfcf, #e9e9e9 30%, #e9e9e9) !important;
+  border-left: 0 !important;
+  border-top: 1px solid var(--haiku-shadow) !important;
+}
+::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(0deg, transparent calc(50% - 4px), var(--haiku-shadow) calc(50% - 4px), var(--haiku-shadow) calc(50% - 3px), var(--haiku-shine) calc(50% - 3px), var(--haiku-shine) calc(50% - 2px), transparent calc(50% - 2px), transparent calc(50% - 1px), var(--haiku-shadow) calc(50% - 1px), var(--haiku-shadow) 50%, var(--haiku-shine) 50%, var(--haiku-shine) calc(50% + 1px), transparent calc(50% + 1px), transparent calc(50% + 2px), var(--haiku-shadow) calc(50% + 2px), var(--haiku-shadow) calc(50% + 3px), var(--haiku-shine) calc(50% + 3px), var(--haiku-shine) calc(50% + 4px), transparent calc(50% + 4px)) center / 6px 100% no-repeat,
+    linear-gradient(90deg, #f4f4f4, #dadada) !important;
+  border: 1px solid var(--haiku-frame) !important;
+  border-radius: 0 !important;
+  min-height: 24px !important;
+}
+::-webkit-scrollbar-thumb:horizontal {
+  background:
+    linear-gradient(90deg, transparent calc(50% - 4px), var(--haiku-shadow) calc(50% - 4px), var(--haiku-shadow) calc(50% - 3px), var(--haiku-shine) calc(50% - 3px), var(--haiku-shine) calc(50% - 2px), transparent calc(50% - 2px), transparent calc(50% - 1px), var(--haiku-shadow) calc(50% - 1px), var(--haiku-shadow) 50%, var(--haiku-shine) 50%, var(--haiku-shine) calc(50% + 1px), transparent calc(50% + 1px), transparent calc(50% + 2px), var(--haiku-shadow) calc(50% + 2px), var(--haiku-shadow) calc(50% + 3px), var(--haiku-shine) calc(50% + 3px), var(--haiku-shine) calc(50% + 4px), transparent calc(50% + 4px)) center / 100% 6px no-repeat,
+    linear-gradient(180deg, #f4f4f4, #dadada) !important;
+}
+::-webkit-scrollbar-button:single-button {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  background-color: #e9e9e9 !important;
+  border: 1px solid var(--haiku-frame) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 7px 7px !important;
+}
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M4 1 7 6H1z' fill='%23333'/%3E%3C/svg%3E") !important;
+}
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1 2h6L4 7z' fill='%23333'/%3E%3C/svg%3E") !important;
+}
+::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1 4 6 1v6z' fill='%23333'/%3E%3C/svg%3E") !important;
+}
+::-webkit-scrollbar-button:single-button:horizontal:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M2 1 7 4 2 7z' fill='%23333'/%3E%3C/svg%3E") !important;
+}
+::-webkit-scrollbar-corner { background: var(--haiku-panel) !important; }
+/* Classic scrollbars win over Gmail's thin overlay ones. */
+* { scrollbar-width: auto !important; scrollbar-color: auto !important; }
+
+/* Menus (Gmail's .J-M and Material [role=menu]): a Haiku BMenu - grey
+ * panel, framed with a bevel and a hard drop shadow, 20px items in the
+ * plain font, a darker-grey highlight (Haiku menus don't use the blue
+ * selection colour), etched separators, no item icons. */
+html body .J-M, html body [role="menu"], html body .J-M.aX0, html body .J-M.Gn {
+  background: var(--haiku-panel) !important;
+  border: 1px solid var(--haiku-shadow-dark) !important;
+  border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), inset -1px -1px 0 var(--haiku-shadow), 2px 2px 0 rgba(0, 0, 0, .3) !important;
+  padding: 2px 0 !important;
+}
+html body .J-M *, html body [role="menu"] * { font-size: 12px !important; color: #000; }
+html body .J-N, html body [role="menu"] [role="menuitem"], html body [role="menu"] [role="menuitemcheckbox"], html body [role="menu"] [role="menuitemradio"] {
+  min-height: 20px !important; height: auto !important;
+  padding: 1px 16px 1px 22px !important;
+  line-height: 18px !important;
+  background: transparent !important;
+  border: 0 !important; border-radius: 0 !important;
+}
+html body .J-M .J-N * { line-height: 18px !important; }
+html body .J-N.J-N-JT, html body .J-N:hover,
+html body [role="menu"] [role="menuitem"]:hover, html body [role="menu"] [role="menuitem"]:focus,
+html body [role="menu"] [role="menuitemcheckbox"]:hover, html body [role="menu"] [role="menuitemradio"]:hover {
+  background: var(--haiku-menu-selected) !important;
+}
+html body .J-N[aria-disabled="true"], html body .J-N[aria-disabled="true"] * { color: var(--haiku-text-dim) !important; }
+html body .J-M .J-Kh, html body [role="menu"] [role="separator"], html body .J-M [role="separator"] {
+  height: 0 !important; margin: 3px 2px !important; padding: 0 !important;
+  border: 0 !important; border-top: 1px solid var(--haiku-shadow) !important; border-bottom: 1px solid var(--haiku-shine) !important;
+  background: none !important;
+}
+html body .J-M img, html body .J-M svg, html body [role="menu"] svg { width: 16px !important; height: 16px !important; }
+html body .J-M .J-N .J-N-JX:not(.aDE):not(.J-N-Jz) { display: none !important; }
+/* Checked items (Show up to N items, sort order...): Haiku's check mark in
+ * the item's left margin, text stays black. Gmail draws its Material check
+ * 28px left of the label, outside the menu. */
+html body .J-M .J-Ks-KO .J-N-Jo, html body .J-M .J-Ks-KO.J-N .J-N-Jo {
+  display: block !important; position: absolute !important; top: 0 !important; left: -18px !important;
+  margin: 0 !important; width: 12px !important; height: 18px !important;
+  background: center / 10px 10px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.5 5 4 7.5 8.5 2' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") !important;
+}
+html body .J-M .J-Ks-KO, html body .J-M .J-Ks-KO .J-N-Jz { color: #000 !important; background-image: none; }
+/* Label as / Move to: each label gets a Haiku checkbox in the item's left
+ * margin (Gmail's Material boxes hang half outside the menu). */
+html body .J-M .J-LC { background-image: none !important; }
+html body .J-M .J-LC .J-LC-Jo {
+  position: absolute !important; left: 4px !important; top: 3px !important; margin: 0 !important;
+  width: 13px !important; height: 13px !important; box-sizing: border-box !important;
+  border: 1px solid var(--haiku-shadow-dark) !important; border-radius: 0 !important;
+  background: var(--haiku-document) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+}
+html body .J-M .J-LC.J-LC-JR-Jp .J-LC-Jo { background: center / 9px 9px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath d='M1 4.5 3.5 7 8 1.5' fill='none' stroke='%231f2f60' stroke-width='1.8'/%3E%3C/svg%3E"), var(--haiku-document) !important; }
+html body .J-M .J-LC.J-LC-Ky-Jp .J-LC-Jo { background: center / 9px 9px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath d='M1.5 4.5h6' stroke='%231f2f60' stroke-width='1.8'/%3E%3C/svg%3E"), var(--haiku-document) !important; }
+html body .J-M .J-LC.J-Ks-KO, html body .J-M .J-LC .J-LC-Jz { color: #000 !important; }
+/* Group headings inside a menu ("Show up to"): a plain dim label. */
+html body .J-M .J-awr {
+  height: auto !important; min-height: 0 !important; width: auto !important;
+  padding: 1px 16px 1px 10px !important; margin: 0 !important;
+  line-height: 18px !important; color: var(--haiku-text-dim) !important;
+}
+
+/* Gmail's toast ("Conversation moved to Trash · Undo") as a Haiku notice. */
+.b8 .vh, .bAp .vh, .vh {
+  background: var(--haiku-panel) !important; color: #000 !important;
+  border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), 2px 2px 0 rgba(0, 0, 0, .25) !important;
+  font: 12px var(--haiku-font) !important; padding: 6px 10px !important;
+}
+.vh .ag, .vh .bAq, .vh span { color: #000 !important; }
+.vh [role="link"], .vh .ag a, .vh #link_undo { color: var(--haiku-accent) !important; font-weight: bold !important; }
+.vh [role="button"], .vh button { filter: invert(1) brightness(.2); background: none !important; border: 0 !important; box-shadow: none !important; }
+/* Its close box: Gmail floats it over the toast's right end (where Undo /
+ * View message are); put it in the row after them instead. */
+html body .vh { display: flex !important; align-items: center !important; gap: 10px !important; }
+html body .vh .bBe { position: static !important; inset: auto !important; margin: 0 !important; flex: none !important; }
+html body .vh .bAq { margin: 0 12px 0 0 !important; }
+html body .vh .aT { align-items: center !important; }
+
+/* ==================================================== 4. Injected chrome */
+/* haiku.js positions these over Gmail without touching Gmail's DOM. */
+body > .haiku-tab-row,
+body > .haiku-columns,
+body > .haiku-splitter {
+  position: fixed !important;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+/* The yellow window tab over the message pane. */
+body > .haiku-tab-row {
+  display: flex;
+  align-items: flex-end;
+  height: 23px;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+}
+.haiku-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 21px;
+  padding: 0 10px 0 5px;
+  background: linear-gradient(var(--haiku-tab-top), var(--haiku-tab) 60%, #f0bd00) !important;
+  border: 1px solid #8c7300 !important;
+  border-bottom: 0 !important;
+  box-shadow: inset 1px 1px 0 #fff2b0 !important;
+  color: #000 !important;
+  font: bold 12px var(--haiku-font) !important;
+  white-space: nowrap;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  user-select: none;
+}
+/* Close box at the left of the tab, like Haiku's window decorator. */
+.haiku-closebox {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border: 1px solid #8c7300;
+  background: linear-gradient(135deg, #fff6c8, #ffd52e);
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #e0b000 !important;
+  box-sizing: border-box;
+}
+/* The row ignores the mouse (it overlays Gmail); the close box doesn't.
+ * Pressed: sunken, like Haiku's decorator. */
+.haiku-closebox { pointer-events: auto; cursor: default; }
+.haiku-closebox:active:not([aria-disabled="true"]) {
+  background: linear-gradient(135deg, #e0b000, #ffd52e) !important;
+  box-shadow: inset 1px 1px 0 #a88a00 !important;
+}
+.haiku-tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* BeMail toolbar: big icons over small labels, flat until hovered. */
+.haiku-toolbar {
+  display: flex;
+  align-items: stretch;
+  gap: 1px;
+  height: 40px;
+  padding: 1px 4px;
+  margin-right: 8px;
+  flex: none;
+  user-select: none;
+}
+.haiku-toolbar-sep {
+  width: 2px;
+  margin: 5px 3px;
+  border-left: 1px solid var(--haiku-shadow);
+  border-right: 1px solid var(--haiku-shine);
+}
+.haiku-tool {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 38px;
+  padding: 1px 3px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  color: #000 !important;
+  font: 10px var(--haiku-font) !important;
+  line-height: 11px !important;
+  cursor: default;
+}
+.haiku-tool img {
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+}
+.haiku-tool:hover:not([aria-disabled="true"]) {
+  background: var(--haiku-button-bg) !important;
+  border-color: var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+}
+.haiku-tool:active:not([aria-disabled="true"]) {
+  background: var(--haiku-button-bg-down) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+}
+.haiku-tool[aria-disabled="true"] { color: var(--haiku-shadow) !important; }
+.haiku-tool[aria-disabled="true"] img { opacity: 0.35; filter: grayscale(1); }
+/* Narrow windows: icon-only toolbar. */
+@media (max-width: 1050px) {
+  .haiku-tool span { display: none; }
+  .haiku-tool { min-width: 30px; }
+}
+/* Narrower still: drop the least-used buttons so search, Settings and the
+ * account stay on screen. Gmail's own action bar still has all of them. */
+@media (max-width: 860px) {
+  .haiku-tool:is([data-tool="replyall"], [data-tool="print"]) { display: none !important; }
+}
+@media (max-width: 720px) {
+  .haiku-tool:is([data-tool="prev"], [data-tool="next"], [data-tool="unread"]),
+  .haiku-toolbar-sep:has(+ [data-tool="prev"]) { display: none !important; }
+}
+@media (max-width: 560px) {
+  .haiku-tool:is([data-tool="spam"], [data-tool="forward"]) { display: none !important; }
+}
+
+/* Tracker-style column headers over the message list. */
+body > .haiku-columns {
+  height: 19px;
+  background: linear-gradient(#fafafa, #e4e4e4) !important;
+  border-top: 1px solid var(--haiku-shine);
+  border-bottom: 1px solid var(--haiku-shadow);
+  font: 12px var(--haiku-font) !important;
+  color: #000;
+  user-select: none;
+  overflow: hidden;
+}
+.haiku-column {
+  position: absolute;
+  top: 0;
+  height: 18px;
+  line-height: 18px;
+  padding-left: 5px;
+  box-sizing: border-box;
+  border-right: 1px solid var(--haiku-shadow);
+  box-shadow: 1px 0 0 var(--haiku-shine) !important;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Status bar along the bottom of the window. */
+.haiku-statusbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 8px 0 6px;
+  display: flex;
+  gap: 18px;
+  background: linear-gradient(#f0f0f0, #d8d8d8) !important;
+  border-top: 1px solid var(--haiku-frame);
+  box-shadow: inset 0 1px 0 var(--haiku-shine) !important;
+  font: 11px var(--haiku-font) !important;
+  color: #000;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.haiku-statusbar span + span {
+  border-left: 1px solid var(--haiku-shadow);
+  padding-left: 8px;
+}
+/* The folder / subject field takes the room and truncates. */
+.haiku-statusbar .haiku-status-folder { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.haiku-statusbar .haiku-status-pager, .haiku-statusbar .haiku-status-sel { flex: none; white-space: nowrap; }
+
+/* Splitter between the folder panel and the message pane: grey bar with a
+ * dotted grip. */
+body > .haiku-splitter {
+  cursor: col-resize;
+  background: var(--haiku-panel);
+  border-left: 1px solid var(--haiku-shine);
+  border-right: 1px solid var(--haiku-shadow);
+}
+body > .haiku-splitter::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: calc(50% - 12px);
+  width: 2px;
+  height: 24px;
+  background: repeating-linear-gradient(var(--haiku-shadow-dark) 0 1px, var(--haiku-shine) 1px 2px, transparent 2px 4px);
+}
+body.haiku-dragging, body.haiku-dragging * { cursor: col-resize !important; user-select: none !important; }
+
+/* Compose and other pop-out windows: just the form, no main-window chrome. */
+.haiku-popup body > .haiku-statusbar,
+.haiku-popup body > .haiku-tab-row,
+.haiku-popup body > .haiku-columns,
+.haiku-popup body > .haiku-splitter,
+.haiku-popup .haiku-toolbar {
+  display: none !important;
+}
+
+/* ============================================================ 5. BRITTLE */
+/* Everything below targets Gmail's obfuscated class names or exact
+ * aria-labels. Re-check these first after a Gmail redesign. */
+
+/* Elements hidden but kept measurable: haiku.js finds and presses some of
+ * them for the main toolbar (Archive, Junk, Trash, Unread, Print,
+ * Previous/Next) and reads the pager text for the status bar. */
+.G-atb .lR, .G-atb .nN, .G-atb .nX, .G-atb .m9, .G-atb .bvt,
+.G-atb .amD, .G-atb .adg, .G-atb .amH, .G-atb .Dj, .G-atb .Di,
+.G-atb .h0, .G-atb .iG:has(.adl),
+.G-atb .G-Ni:not(:has(.T-I:not(.lR):not(.nN):not(.nX):not(.m9):not(.bvt):not(.amD):not(.adg))),
+.byY button[aria-label="Print all"] {
+  position: absolute !important;
+  width: 1px !important; height: 1px !important; min-width: 0 !important;
+  margin: 0 !important; padding: 0 !important; border: 0 !important;
+  overflow: hidden !important; clip-path: inset(50%) !important;
+  opacity: 0 !important; pointer-events: none !important;
+}
+
+/* Gmail-only extras with no BeOS counterpart: Google logo, apps grid,
+ * support, Gemini, chat presence, Chat/Meet rail, add-on panel, chat
+ * sharing, emoji reactions, importance markers, "open in new window",
+ * the AI "Correct?" feedback row. */
+header[role="banner"] a[href*="#inbox"] img,
+header[role="banner"] a[title="Gmail"],
+a[aria-label="Google apps"],
+[aria-label="Support"], [data-tooltip="Support"],
+header[role="banner"] [aria-label*="Support" i],
+header[role="banner"] [aria-label*="Help" i],
+header[role="banner"] [data-tooltip*="Support" i],
+[role="button"][aria-label*="Gemini" i]:not([role="dialog"] *),
+a[aria-label*="Gemini" i]:not([role="dialog"] *),
+.gb_qc, .gb_rc,
+header[role="banner"] [aria-label^="Status:"],
+[role="navigation"][aria-label*="Chat" i],
+[role="navigation"][aria-label*="Meet" i],
+[role="navigation"].aeN,
+[role="complementary"], .bAw, .brC-brG,
+[aria-label="Share in chat"], [data-tooltip="Share in chat"],
+.ams:has([aria-label="Share in chat"]),
+[aria-label="Add reaction"], [data-tooltip="Add reaction"],
+[aria-label="Add emoji reaction"], [data-tooltip="Add emoji reaction"],
+html body .gE button[aria-label*="react" i]:not(#haiku-x):not(#haiku-y),
+html body .gE button[aria-label*="emoji" i]:not(#haiku-x):not(#haiku-y),
+html body button[aria-label="Add reaction"]:not(#haiku-x):not(#haiku-y),
+html body button[aria-label="In new window"]:not(#haiku-x):not(#haiku-y),
+html body .amn .wrsVRe,
+.ha .pG, .ha [role="switch"][aria-label*="important" i],
+.ha [aria-label*="important" i], .ha [data-tooltip*="important" i],
+html body .ha button[aria-label*="important" i]:not(#haiku-x), html body .ha [role="button"][aria-label*="important" i],
+.CHBOjb {
+  display: none !important;
+}
+
+/* -- Top bar: hamburger | BeMail toolbar | search | settings, account --- */
+header[role="banner"], #gb {
+  background: var(--haiku-panel) !important;
+  border-bottom: 1px solid var(--haiku-frame) !important;
+}
+header[role="banner"] {
+  height: 46px !important;
+  min-height: 46px !important;
+}
+header[role="banner"] > .gb_Vd, header[role="banner"] > div:has(form[role="search"]) {
+  height: 46px !important;
+  padding: 0 !important;
+  align-items: center !important;
+}
+/* haiku.js appends the toolbar to the header; it sits in the gap Gmail's
+ * row leaves between the menu button and the search field. */
+header[role="banner"] > .haiku-toolbar {
+  position: absolute !important;
+  top: 2px;
+  left: 56px;
+  height: 42px !important;
+  margin: 0 !important;
+  z-index: 2;
+}
+/* Left block: just the menu button, plus room for the toolbar. */
+header[role="banner"] div:has(> [aria-label="Main menu"]) {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  padding: 0 4px !important;
+  margin-right: calc(var(--haiku-toolbar-w, 560px) + 8px) !important;
+}
+/* The block holding the search form: compact, pushed right, shrinks first. */
+header[role="banner"] div:has(> form[role="search"]) {
+  flex: 0 1 260px !important;
+  width: 260px !important;
+  min-width: 120px !important;
+  max-width: 260px !important;
+  height: 24px !important;
+  margin-left: auto !important;
+  padding: 0 !important;
+}
+header[role="banner"] div:has(> div > form[role="search"]):not(header > div) {
+  flex: 1 1 auto !important;
+  justify-content: flex-end !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+header[role="banner"] .gb_ce { flex: 1 1 auto !important; min-width: 0 !important; justify-content: flex-end !important; }
+@media (max-width: 1050px) {
+  header[role="banner"] div:has(> form[role="search"]) { width: 180px !important; max-width: 180px !important; }
+}
+@media (max-width: 720px) {
+  header[role="banner"] div:has(> form[role="search"]) { width: 140px !important; min-width: 100px !important; }
+}
+/* Search: a single 24px Haiku text field with the magnifier inside. */
+html body header[role="banner"] form[role="search"] {
+  width: 100% !important;
+  max-width: none !important;
+  height: 24px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  top: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 2px !important;
+  box-sizing: border-box !important;
+}
+html body header[role="banner"] form[role="search"] > div {
+  height: 22px !important;
+  min-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+html body header[role="banner"] form[role="search"] [gh="sb"] { flex: 1 1 auto !important; height: 22px !important; }
+html body header[role="banner"] form[role="search"] input[name="q"],
+html body header[role="banner"] form[role="search"] input {
+  width: 100% !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  padding: 0 4px !important;
+  font-size: 12px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+html body header[role="banner"] form[role="search"] button,
+html body header[role="banner"] form[role="search"] [role="button"] {
+  flex: 0 0 22px !important;
+  width: 24px !important;
+  min-width: 0 !important;
+  height: 22px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: static !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+html body header[role="banner"] form[role="search"] svg {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 3px !important;
+  display: block !important;
+  position: static !important;
+}
+/* Gmail switches the search box to a wider layout (options and clear
+ * buttons, magnifier on the right) in wide windows. Pin one layout for all
+ * widths: magnifier, then the field taking all the room, then Clear and
+ * Search options. */
+html body header[role="banner"] form[role="search"] [gh="sb"] {
+  order: 1 !important; flex: 1 1 0 !important; min-width: 0 !important; width: auto !important;
+  margin: 0 !important; padding: 0 !important;
+}
+html body header[role="banner"] form[role="search"] [gh="sb"] table,
+html body header[role="banner"] form[role="search"] [gh="sb"] tbody,
+html body header[role="banner"] form[role="search"] [gh="sb"] tr,
+html body header[role="banner"] form[role="search"] [gh="sb"] td {
+  width: 100% !important; height: 22px !important; margin: 0 !important; padding: 0 !important; border: 0 !important;
+}
+html body header[role="banner"] form[role="search"] [gh="sb"] td:not(:has(input[name="q"])) { width: 0 !important; }
+/* The input is absolutely positioned inside a zero-height wrapper; give
+ * the wrapper the field's height so the input fills it. */
+html body header[role="banner"] form[role="search"] [gh="sb"] td > div:has(> input[name="q"]) { height: 22px !important; }
+html body header[role="banner"] form[role="search"] [gh="sb"] input[name="q"] { top: 1px !important; left: 0 !important; }
+html body header[role="banner"] form[role="search"] button.bEP { order: 0 !important; }
+html body header[role="banner"] form[role="search"] button[aria-label="Clear search"]:not(#haiku-x) {
+  order: 2 !important; background: transparent !important; border: 0 !important; box-shadow: none !important;
+}
+html body header[role="banner"] form[role="search"] button[aria-label="Advanced search options"] { order: 3 !important; }
+html body header[role="banner"] form[role="search"] button svg { padding: 0 !important; }
+html body header[role="banner"] form[role="search"] > div.searchboxInputFontClass { display: none !important; }
+/* In narrow windows Gmail turns the magnifier into an "open search" button
+ * that floats the form over the whole bar with a Go back arrow. Keep it the
+ * same field in the same place. (Gmail's rule is .qp form[method][role]
+ * [aria-expanded], hence the repeated attribute.) */
+html body header[role="banner"] form[role="search"][role="search"][role="search"] {
+  position: relative !important; inset: 0 auto auto 0 !important;
+  width: 100% !important; z-index: auto !important; transition: none !important; animation: none !important;
+  overflow: visible !important;
+}
+html body header[role="banner"] form[role="search"] button[aria-label="Go back"] { display: none !important; }
+/* ...and before it opens, Gmail hides the input itself (the field is just
+ * a magnifier button). Keep the input and options button there always. */
+html body header[role="banner"] form[role="search"] [gh="sb"] { display: block !important; }
+html body header[role="banner"] form[role="search"] button[aria-label="Advanced search options"] { display: block !important; }
+/* Suggestions (recent searches, matches): Gmail puts the table in the
+ * field's own flex row, which pushes the input out of the box. Drop it
+ * below the field as a Haiku menu instead. */
+html body header[role="banner"] form[role="search"] > table.gssb_c {
+  position: absolute !important; top: 100% !important; left: -1px !important; right: auto !important;
+  width: calc(100% + 2px) !important; max-width: none !important; margin: 1px 0 0 !important; z-index: 1000 !important;
+  flex: none !important; order: 9 !important;
+  background: var(--haiku-panel) !important;
+  border: 1px solid var(--haiku-shadow-dark) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), 2px 2px 0 rgba(0, 0, 0, .3) !important;
+}
+html body header[role="banner"] form[role="search"] > table.gssb_c * { font-size: 12px !important; color: #000; }
+html body header[role="banner"] form[role="search"] > table.gssb_c :is(tr, td, table, tbody, div):not(.HW) { background-color: transparent !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c :is(td, div)[role="presentation"] { padding-top: 0 !important; padding-bottom: 0 !important; }
+/* Suggestion rows: 20px menu items, darker grey when selected. */
+html body header[role="banner"] form[role="search"] > table.gssb_c :is(table, div, svg, td):not(.aSP):not(.aSP *) { margin: 0 !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .gssb_m { margin: 2px 0 !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c td.gssb_a { padding: 0 !important; line-height: 18px !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .gsaq_a tr:not(:first-child) { display: none !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .gsaq_a .gstq_d { margin-left: 6px !important; line-height: 18px !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .gsaq_a svg { display: block !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .gsaq_a { padding: 1px 8px !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .gsaq_a td { height: 18px !important; padding: 0 2px !important; line-height: 18px !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .gsaq_a svg { width: 14px !important; height: 14px !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c :is(tr.gssb_i, .gsaq_a:hover, [role="option"][aria-selected="true"]) { background-color: var(--haiku-menu-selected) !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c :is(tr.gssb_i, [aria-selected="true"]) * { background-color: transparent !important; }
+/* Quick filters (Has attachment, Last 7 days...): small push buttons. */
+html body header[role="banner"] form[role="search"] > table.gssb_c .aSP { padding: 4px 6px 2px !important; display: flex !important; flex-wrap: wrap !important; gap: 4px !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .aSP .aq3 { margin: 0 !important; padding: 0 !important; height: auto !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .HW {
+  height: 20px !important; min-height: 0 !important; margin: 0 !important; padding: 0 8px !important;
+  display: flex !important; align-items: center !important;
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important;
+  border-radius: 3px !important; box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+}
+html body header[role="banner"] form[role="search"] > table.gssb_c .HW:hover { background: var(--haiku-button-bg-hover) !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .HW .H1 { display: none !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c .HW :is(.HY, .H5) { height: auto !important; padding: 0 !important; margin: 0 !important; line-height: 18px !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c tr + tr > td { border-top: 0 !important; }
+html body header[role="banner"] form[role="search"] > table.gssb_c [role="separator"], html body header[role="banner"] form[role="search"] > table.gssb_c .gssb_l {
+  height: 0 !important; margin: 3px 2px !important; border: 0 !important;
+  border-top: 1px solid var(--haiku-shadow) !important; border-bottom: 1px solid var(--haiku-shine) !important;
+}
+html body header[role="banner"] form[role="search"] button.bEP { display: block !important; }
+
+/* Settings / account: smaller; avatar only (no Workspace logo pill). */
+header[role="banner"] [data-tooltip="Settings"],
+header[role="banner"] a[aria-label*="Google Account" i] {
+  transform: scale(0.85);
+}
+header[role="banner"] .gb_fb, header[role="banner"] .gb_ud, header[role="banner"] .gb_5c { display: none !important; }
+header[role="banner"] .gb_9a, header[role="banner"] div:has(> div > a[aria-label^="Google Account"]) {
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  width: auto !important;
+}
+header[role="banner"] div:has(> div > div > a[aria-label^="Google Account"]) { width: auto !important; }
+header[role="banner"] .gb_de, header[role="banner"] .gb_Od { width: auto !important; flex: 0 0 auto !important; }
+/* Keep the avatar inside the bar. */
+header[role="banner"] > div:nth-child(2) { max-width: 100vw !important; overflow-x: clip !important; overflow-y: visible !important; box-sizing: border-box !important; padding-right: 6px !important; }
+
+/* -- Window layout ------------------------------------------------------ */
+/* Gmail sizes its app body for its own 64px header; ours differs, so size
+ * the body from the viewport. 17px is the status bar. */
+.nH.aqk.aql.bkL { height: calc(100vh - var(--haiku-header-h, 107px) - 17px) !important; }
+.bkK, .nH.bkK > .nH { background: var(--haiku-panel) !important; }
+.bkK { padding-bottom: 16px !important; }
+
+/* -- Folder list: Tracker-style, resizable ------------------------------- */
+[role="navigation"] { background: var(--haiku-panel) !important; }
+.bhZ {
+  background: var(--haiku-document) !important;
+  border: 1px solid var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+  margin: 4px 0 20px 4px !important;
+}
+.aqn.aIH {
+  width: var(--haiku-nav-w) !important;
+  min-width: var(--haiku-nav-w) !important;
+  max-width: var(--haiku-nav-w) !important;
+  margin-right: 4px !important;
+}
+.aqn.aIH .aBO, .aqn.aIH .at9, .aqn.aIH .Ls77Lb, .aqn.aIH .pp,
+.aqn.aIH .nM, .aqn.aIH .yJ, .aqn.aIH .ajl, .aqn.aIH .wT,
+.aqn.aIH .n3, .aqn.aIH .zw, .aqn.aIH .TK, .aqn.aIH .aim, .aqn.aIH .TO {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+.aqn.aIH .TN { width: auto !important; }
+.at9 { padding-top: 2px !important; }
+/* No Compose button (the toolbar's New does that). Collapsing the folder
+ * list hides it completely (Haiku has no icon-rail state). */
+.aqn.aIH .aic, .aqn.aIH.aBA { display: none !important; }
+/* Folder rows: 20px, selection in Haiku's blue. */
+.TO, .TN {
+  border-radius: 0 !important;
+  height: 20px !important;
+  margin: 0 !important;
+  padding-left: 6px !important;
+}
+.TO .nU, .TO .bsU, .TN .nU { color: #000 !important; }
+.TO .nU, .TO .bsU, .TO a, .TO span { line-height: 20px !important; }
+.TO.nZ, .TO.nZ:hover, .nZ .TO { background: var(--haiku-selection) !important; }
+.TO.nZ .nU, .TO.nZ .bsU { font-weight: bold !important; }
+.TO:hover { background: var(--haiku-hover) !important; }
+/* "Labels" section header: small, bold, dim. */
+.aAw { padding: 6px 0 2px 10px !important; height: auto !important; }
+.aAw, .aAw * { font-weight: bold !important; color: var(--haiku-text-dim) !important; }
+/* Haiku's Tracker icons in place of Material's. */
+.TO .qj {
+  background: center / 16px 16px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/folder.svg") !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+.TO .qj::before, .TO .qj::after { display: none !important; }
+.TO[data-tooltip="Inbox"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/inbox.svg") !important; }
+.TO[data-tooltip="Starred"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/star-on.svg") !important; }
+.TO[data-tooltip="Snoozed"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/snoozed.svg") !important; }
+.TO[data-tooltip="Important"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/important.svg") !important; }
+.TO[data-tooltip="Sent"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/sent.svg") !important; }
+.TO[data-tooltip="Drafts"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/drafts.svg") !important; }
+.TO[data-tooltip="Scheduled"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/scheduled.svg") !important; }
+.TO[data-tooltip="All Mail"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/allmail.svg") !important; }
+.TO[data-tooltip="Spam"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/spam.svg") !important; }
+.TO[data-tooltip="Trash"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/trash-folder.svg") !important; }
+
+/* -- Message pane: one framed window under the yellow tab --------------- */
+[role="main"] {
+  background: var(--haiku-panel-light) !important;
+  border: 1px solid var(--haiku-frame) !important;
+  margin: 25px 4px 0 4px !important;
+  height: calc(100vh - var(--haiku-header-h, 46px) - 25px - 21px) !important;
+  max-height: calc(100vh - var(--haiku-header-h, 46px) - 25px - 21px) !important;
+  box-sizing: border-box !important;
+  flex-direction: column !important;
+}
+[role="main"] > [gh="tl"], [role="main"] .Nr.UI, [role="main"] .Nu.tf.aZ6 {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+/* The list itself is the white Tracker document area; room for the
+ * column header overlay above it. */
+[role="main"] .Nu.tf.aZ6 { background: var(--haiku-document) !important; }
+.haiku-has-columns [role="main"] .Nu.tf.aZ6 { margin-top: 19px !important; }
+/* Open threads and Settings: Gmail's header bar (.aeH) sits outside
+ * [role="main"]; frame it as the top of the same window. */
+.haiku-outer-bar:not(.haiku-outer-search) .aeH, .haiku-outer-search .bf5 > .biW {
+  margin: 25px 4px 0 4px !important;
+  border: 1px solid var(--haiku-frame) !important;
+  border-bottom: 0 !important;
+  background: var(--haiku-panel-light) !important;
+}
+.haiku-outer-bar [role="main"] { margin-top: 0 !important; }
+
+/* -- Gmail's action bar: one slim 28px row of flat tool buttons --------- */
+[gh="mtb"], .G-atb {
+  background: var(--haiku-panel-light) !important;
+  border-bottom: 1px solid var(--haiku-shadow) !important;
+}
+[role="main"] .G-atb { border-bottom: 0 !important; }
+/* (Not the drop-down menus that live inside the bar.) */
+:is([gh="mtb"], .G-atb) *:not([role="button"]):not(.T-I):not(input):not(:is(.J-M, [role="menu"]), :is(.J-M, [role="menu"]) *) {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-bottom: 0 !important;
+}
+.G-atb { height: auto !important; min-height: 28px !important; padding: 0 4px !important; align-items: center !important; }
+.G-atb .G-tF, .G-atb .bzn, .G-atb .Cq, .G-atb .aqK {
+  display: flex !important; align-items: center !important;
+  height: 26px !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important;
+}
+.G-atb .G-Ni { height: 24px !important; padding: 0 4px !important; margin: 0 !important; display: inline-flex !important; align-items: center !important; }
+/* Etched separators between button groups. */
+.G-atb .G-Ni + .G-Ni { border-left: 1px solid var(--haiku-shadow) !important; box-shadow: inset 1px 0 0 var(--haiku-shine) !important; }
+.G-atb .T-I.T-I-ax7 {
+  width: 26px !important; height: 24px !important; min-width: 0 !important;
+  margin: 0 1px !important; padding: 0 !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  background: transparent !important; border: 1px solid transparent !important;
+  border-radius: 3px !important; box-shadow: none !important;
+}
+.G-atb .T-I.T-I-ax7:hover {
+  background: var(--haiku-button-bg) !important; border-color: var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+}
+.G-atb .T-I.T-I-ax7:active, .G-atb .T-I.T-I-ax7.T-I-JW,
+html body .G-atb .T-I.T-I-ax7.T-I-Kq, html body .G-atb .T-I.T-I-ax7.T-I-JO {
+  background: var(--haiku-button-bg-down) !important; border-color: var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; border-radius: 3px !important;
+}
+.G-atb .T-I.T-I-ax7.T-I-JE { opacity: .4 !important; } /* disabled */
+/* Text-only action buttons (Discard drafts, Delete forever, Not spam...):
+ * sized to their label. */
+html body .G-atb .T-I.T-I-ax7:not(:has(.asa)):not(.T-Pm):not(.J-JN-M-I) { width: auto !important; padding: 0 6px !important; white-space: nowrap !important; }
+/* Select (checkbox + menu arrow): wide enough for both and flat - a
+ * checkbox with a pop-up arrow, not a tool button around a checkbox. */
+html body .G-atb .T-I.T-I-ax7.T-Pm { width: auto !important; padding: 0 2px 0 0 !important; }
+html body .G-atb .T-I.T-I-ax7.T-Pm:is(:hover, :active, .T-I-JW, .T-I-Kq, .T-I-JO) {
+  background: transparent !important; border-color: transparent !important; box-shadow: none !important;
+}
+/* Haiku icons where Haiku has one; the rest keep Gmail's glyph in black. */
+.G-atb .T-I .asa { width: 20px !important; height: 20px !important; filter: grayscale(1) brightness(.25); }
+.G-atb .lS .asa, .G-atb .uUQygd .asa, .G-atb .VJ .asa, .G-atb .ns .asa {
+  filter: none !important; background: center / 20px 20px no-repeat var(--haiku-ico) !important;
+}
+.G-atb .lS .asa > *, .G-atb .uUQygd .asa > *, .G-atb .VJ .asa > *, .G-atb .ns .asa > *,
+.G-atb .lS .asa::before, .G-atb .uUQygd .asa::before, .G-atb .VJ .asa::before, .G-atb .ns .asa::before { display: none !important; }
+.G-atb .lS { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/back.svg"); }
+.G-atb .uUQygd { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/snoozed.svg"); }
+.G-atb .VJ { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/scheduled.svg"); }
+.G-atb .ns { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/folder.svg"); }
+
+/* -- Category tabs (Primary / Promotions / ...): a Haiku BTabView. The
+ * front tab is the light panel that runs into the column header below;
+ * back tabs are shaded. Text only - Haiku tabs carry no icons - and no
+ * yellow (that is the window tab's). */
+html body tr[role="tablist"].aAA {
+  height: 28px !important;
+  min-height: 0 !important;
+  padding: 2px 4px 0 !important;
+  border-bottom: 1px solid var(--haiku-frame) !important;
+}
+html body tr[role="tablist"].aAA > td { vertical-align: bottom !important; height: 26px !important; }
+html body .aKh, html body .aKh > table.aKk, html body .aKh > table.aKk > tbody { height: auto !important; min-height: 0 !important; }
+html body [role="tablist"] td [role="tab"].aAy,
+html body [role="tablist"] [role="tab"].aAy {
+  height: 22px !important;
+  margin: 2px -1px 0 0 !important;
+  background: linear-gradient(#e2e2e2, #cfcfcf) !important;
+  border: 1px solid var(--haiku-frame) !important;
+  border-bottom: 0 !important;
+  border-radius: 3px 3px 0 0 !important;
+  box-shadow: inset 1px 1px 0 #f0f0f0 !important;
+  font-size: 12px !important;
+}
+html body [role="tablist"] td [role="tab"].aAy[aria-selected="true"],
+html body [role="tablist"] [role="tab"].aAy[aria-selected="true"] {
+  height: 24px !important;
+  margin-top: 0 !important;
+  background: linear-gradient(#ffffff, #f4f4f4) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+  position: relative;
+  z-index: 1;
+}
+[role="tablist"] [role="tab"] * { color: #000 !important; }
+[role="tablist"] [role="tab"][aria-selected="true"] .aKz { font-weight: bold !important; }
+[role="tablist"] [role="tab"] .aKz { padding-left: 10px !important; }
+[role="tablist"] [role="tab"] [style*="background"] { background: transparent !important; }
+[role="tablist"] *::before, [role="tablist"] *::after,
+[role="tablist"] [role="tab"] .aKu, [role="tablist"] [role="tab"] .aKo,
+[role="tablist"] [role="tab"] [class*="bar" i],
+[role="tablist"] [role="tab"] .aKp, [role="tablist"] [role="tab"] .aKt img {
+  display: none !important;
+}
+[role="tablist"] td, [role="tablist"] tr { border-bottom-color: var(--haiku-frame) !important; }
+/* "2 new" badge: small accent text, not an orange chip. */
+[role="tablist"] .aDG { background: none !important; font-weight: bold !important; padding: 0 0 0 2px !important; }
+[role="tablist"] .aDG, [role="tablist"] .aDG * { color: var(--haiku-accent) !important; }
+
+/* -- Message list: a Tracker list view with 22px rows ------------------- */
+tr.zA {
+  height: 22px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background: var(--haiku-document) !important;
+  border-bottom: 1px solid #ececec !important;
+  box-shadow: none !important;
+}
+tr.zA:nth-child(even) { background: #f7f7f7 !important; }
+tr.zA:hover { background: var(--haiku-hover) !important; box-shadow: none !important; }
+tr.zA.x7, tr.zA.x7:hover, tr.zA.btb { background: var(--haiku-selection) !important; }
+tr.zA > td {
+  height: 22px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 22px !important;
+  color: #000 !important;
+}
+tr.zA .yW, tr.zA .bA4, tr.zA .xT, tr.zA .y6, tr.zA .xW { line-height: 22px !important; height: 22px !important; }
+tr.zA.zE .bog, tr.zA.zE .yW, tr.zA.zE .xW { font-weight: bold !important; }
+tr.zA.yO .bog, tr.zA.yO .yW { font-weight: normal !important; }
+tr.zA .y2 { color: var(--haiku-text-dim) !important; }
+tr.zA .xW span { color: #000 !important; }
+/* Inbox section headers ("Everything else", "Starred"): a 22px Tracker
+ * group row - bold label, collapse arrow, count and options at the right. */
+html body [role="main"] .Wg {
+  height: 22px !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important;
+  display: flex !important; align-items: center !important;
+  background: var(--haiku-panel-light) !important; border-bottom: 1px solid var(--haiku-shadow) !important;
+}
+html body [role="main"] .Wg h3.Wr { height: 22px !important; margin: 0 !important; display: flex !important; align-items: center !important; }
+html body [role="main"] .Wg .Wn { height: 20px !important; line-height: 20px !important; }
+html body [role="main"] .Wg .qh { font-size: 12px !important; font-weight: bold !important; line-height: 20px !important; color: #000 !important; }
+html body [role="main"] .Wg * { font-size: 12px !important; }
+html body [role="main"] .Wg > *, html body [role="main"] .Wg div:has(> .Wr) { height: 22px !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+html body [role="main"] div:has(> .Wg) { height: auto !important; }
+
+/* Row and select-all checkboxes (Gmail's div.T-Jo with Material images
+ * that fade in on hover): always-visible Haiku checkboxes. No drag grip. */
+html body .xY > .T-Jo, html body .G-tF .T-Jo, html body .zA .T-Jo {
+  background-image: none !important; opacity: 1 !important; position: relative !important;
+}
+html body .xY > .T-Jo::before, html body .G-tF .T-Jo::before, html body .zA .T-Jo::before { display: none !important; }
+html body .xY > .T-Jo::after, html body .G-tF .T-Jo::after, html body .zA .T-Jo::after {
+  content: "" !important; display: block !important; position: absolute !important;
+  left: 3px !important; top: 3px !important; width: 13px !important; height: 13px !important;
+  box-sizing: border-box !important; opacity: 1 !important; transform: none !important;
+  border: 1px solid var(--haiku-shadow-dark) !important; border-radius: 0 !important;
+  background: var(--haiku-document) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+}
+html body .xY > .T-Jo.T-Jo-Jp::after, html body .G-tF .T-Jo.T-Jo-Jp::after, html body .zA .T-Jo.T-Jo-Jp::after {
+  background: center / 9px 9px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath d='M1 4.5 3.5 7 8 1.5' fill='none' stroke='%231f2f60' stroke-width='1.8'/%3E%3C/svg%3E"), var(--haiku-document) !important;
+}
+html body .G-tF .T-Jo.T-Jo-ayH::after {
+  background: center / 9px 9px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath d='M1.5 4.5h6' stroke='%231f2f60' stroke-width='1.8'/%3E%3C/svg%3E"), var(--haiku-document) !important;
+}
+html body .xY > .T-Jo:focus-visible::after, html body .G-tF .T-Jo:focus-visible::after { outline: 1px solid var(--haiku-focus) !important; outline-offset: 1px !important; }
+html body .xY > .T-Jo .T-Jo-auh, html body .G-tF .T-Jo .T-Jo-auh { display: none !important; }
+html body td.oZ-x3, html body .aqw td.oZ-x3 { background: none !important; }
+html body td.oZ-x3::before, html body td.TC::before { display: none !important; }
+
+/* Read/unread status icon in the importance column, BeMail-style. */
+tr.zA td.WA {
+  width: 22px !important;
+  background: center / 16px 16px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/read.svg") !important;
+}
+tr.zA.zE td.WA { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/unread.svg") !important; }
+tr.zA td.WA > * { opacity: 0 !important; }
+/* Stars: Haiku's star. */
+tr.zA .T-KT {
+  background: center / 15px 15px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/star-off.svg") !important;
+  opacity: 0.55;
+}
+tr.zA .T-KT.T-KT-Jp {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/star-on.svg") !important;
+  opacity: 1;
+}
+tr.zA .T-KT::before, tr.zA .T-KT > * { display: none !important; }
+/* Attachment chips in rows become a small file icon. */
+tr.zA .brd, tr.zA .bqY, tr.zA .aKS { display: none !important; }
+tr.zA .yf.xY img, tr.zA .aZo {
+  content: url("chrome-extension://__MSG_@@extension_id__/icons/attachment.svg") !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+/* Label chips: small, flat Tracker attributes, centred in the row. */
+tr.zA .xT { display: flex !important; align-items: center !important; }
+tr.zA .xT .yi { display: inline-flex !important; align-items: center !important; height: auto !important; align-self: center !important; }
+tr.zA .ar.as { height: 16px !important; margin-top: 0 !important; vertical-align: middle !important; }
+.ar.as, .at, .au, .av { border-radius: 0 !important; font-size: 11px !important; }
+tr.zA .ar.as .at, tr.zA .ar.as .au, tr.zA .ar.as .av { height: 16px !important; line-height: 16px !important; }
+tr.zA .ar.as .at { border: 1px solid var(--haiku-panel-dark) !important; background: var(--haiku-panel-light) !important; }
+tr.zA .ar.as .av { color: #333 !important; padding: 0 3px !important; }
+.bqX { border-radius: 0 !important; } /* hover actions */
+
+/* -- Open thread: Haiku Mail / Beam read view ----------------------------- */
+.adn, .h7, .gs { background: var(--haiku-document) !important; }
+/* Subject heading, tight under the toolbar, no rule (the header panels
+ * below carry the structure). */
+.byY { padding: 8px 0 4px 8px !important; }
+.btDi4d { padding-left: 8px !important; }
+.ha { margin-bottom: 4px !important; padding-bottom: 4px !important; border-bottom: 0 !important; }
+h2.hP {
+  font: bold 13px/20px var(--haiku-font) !important;
+  color: #000 !important;
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+.ha .edeTZ { vertical-align: middle !important; }
+/* Labels on the subject line: Tracker attribute chips. */
+.ha .aau, .ha .hN {
+  background: var(--haiku-panel-light) !important;
+  color: #000 !important;
+  border: 1px solid var(--haiku-shadow) !important;
+  border-radius: 0 !important;
+  padding: 0 4px !important;
+  height: 16px !important; line-height: 16px !important;
+  font-size: 11px !important;
+}
+.ha .aau * { color: #000 !important; font-size: 11px !important; line-height: 16px !important; }
+.ha .wYeeg + .wYeeg > div { border: 1px solid var(--haiku-shadow) !important; border-left: 0 !important; height: 16px !important; background: var(--haiku-panel-light) !important; }
+/* Messages stack without gaps: a header panel over a white body, a frame
+ * line between messages. */
+.kv, .kQ, .h7, .gs, .Bk, .adn { margin: 0 !important; }
+.Bk, .adn { padding: 0 !important; }
+.adn.ads, .kv.ads, .kQ.ads { border-top: 1px solid var(--haiku-frame) !important; }
+.gs.gt:has(> .G3 .gE.hI), .kv .gs, .kQ .gs { padding-bottom: 0 !important; }
+.ii.gt { padding: 10px 12px !important; }
+/* Message header: Haiku Mail's grey header panel; when expanded, Beam's
+ * dark label column ("From:" / "To:") beside the light value area. No
+ * avatars - neither BeMail nor Beam has them. */
+.aju { display: none !important; }
+.gE.iv.gt, .gE.hI {
+  background: var(--haiku-panel-light) !important;
+  border-top: 1px solid var(--haiku-shine) !important;
+  border-bottom: 1px solid var(--haiku-shadow) !important;
+  padding: 4px 6px 4px 8px !important;
+}
+.gE.iv.gt { position: relative !important; padding-left: 62px !important; }
+.gE.iv.gt::before {
+  content: "From:\A To:"; white-space: pre; position: absolute; left: 0; top: 0; bottom: 0; width: 54px;
+  padding: 5px 6px 0 0; box-sizing: border-box; text-align: right;
+  font: bold 12px/20px var(--haiku-font); color: #000;
+  background: var(--haiku-panel-dark); border-right: 1px solid var(--haiku-shadow);
+}
+.gE.iv.gt .gD, .gE.iv.gt .go, .gE.iv.gt .hb, .gE.iv.gt .g2 { line-height: 20px !important; }
+.gE.iv.gt .gH, .gE.iv.gt .gK { vertical-align: top !important; }
+.gE .gK, .gE .gH, .gE .gH > *, .gE .gK > * { vertical-align: middle !important; }
+.gD, .gD span, .zF, .yP { color: #000 !important; }
+.gD { font-weight: bold !important; }
+.g3, .g2, .go, .gE .gK span { color: var(--haiku-text-dim) !important; }
+.g3, .go, .gE .gK span { font-size: 11px !important; }
+/* Header stars: Haiku's star, like the message list. */
+.gE .zd, .gE .T-KT { width: 16px !important; height: 16px !important; }
+.gE .T-KT {
+  background: center / 15px 15px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/star-off.svg") !important;
+  opacity: .6;
+}
+.gE .T-KT.T-KT-Jp { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/star-on.svg") !important; opacity: 1; }
+.gE .T-KT::before, .gE .T-KT > *, .gE .T-KT svg { display: none !important; }
+/* Attachments: Beam's lighter grey band under the header. */
+.hq.gt { background: var(--haiku-panel-light) !important; border-top: 1px solid var(--haiku-shine) !important; border-bottom: 1px solid var(--haiku-shadow) !important; padding: 4px 8px !important; }
+
+/* Material icon buttons (header reply/more, Expand all, ...): flat 24px
+ * toolbar buttons that bevel on hover, not push buttons. */
+html body button[class*="-JX-I"]:not(#haiku-x) {
+  width: 24px !important; height: 24px !important; min-width: 0 !important; min-height: 0 !important;
+  padding: 3px !important; margin: 0 1px !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  background: transparent !important; border: 1px solid transparent !important;
+  border-radius: 3px !important; box-shadow: none !important; vertical-align: middle !important;
+}
+html body button[class*="-JX-I"]:not(#haiku-x):hover {
+  background: var(--haiku-button-bg) !important; border-color: var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+}
+html body button[class*="-JX-I"]:not(#haiku-x):active { background: var(--haiku-button-bg-down) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; }
+html body button[class*="-JX-I"]:not(#haiku-x) svg, html body button[class*="-JX-I"]:not(#haiku-x) img,
+html body button[class*="-JX-I"]:not(#haiku-x) .asa, html body button[class*="-JX-I"]:not(#haiku-x) [class*="icon" i] {
+  width: 16px !important; height: 16px !important; min-width: 0 !important; color: #000 !important; fill: currentColor;
+}
+html body button[class*="-JX-I"]:not(#haiku-x)::before, html body button[class*="-JX-I"]:not(#haiku-x)::after,
+html body button[class*="-JX-I"]:not(#haiku-x) > span:empty, html body button[class*="-JX-I"]:not(#haiku-x) > div:empty { display: none !important; }
+.gE.iv.gt button[class*="-JX-I"]:not(#haiku-x) { margin-top: -2px !important; }
+/* Header Reply button: Haiku's arrow. */
+html body .gE button[aria-label="Reply"]:not(#haiku-x) {
+  background: center / 16px 16px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/reply.svg") !important;
+}
+html body .gE button[aria-label="Reply"]:not(#haiku-x):hover {
+  background: center / 16px 16px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/reply.svg"), var(--haiku-button-bg) !important;
+}
+html body .gE button[aria-label="Reply"]:not(#haiku-x) > * { visibility: hidden !important; }
+
+/* Reply / Forward row: uniform 24px push buttons with Haiku's arrows. */
+.amr { padding: 12px 8px 16px !important; }
+.amn { display: flex !important; align-items: center !important; gap: 6px !important; }
+.ams {
+  background: var(--haiku-button-bg) !important;
+  border: 1px solid var(--haiku-frame) !important;
+  border-radius: 3px !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+  color: #000 !important;
+  height: 24px !important;
+  line-height: 22px !important;
+}
+.amn .ams:not([style*="display: none"]) {
+  display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 4px;
+  margin: 0 !important; padding: 0 14px 0 10px !important; min-width: 80px !important;
+  font: 12px var(--haiku-font) !important;
+}
+.amn .ams img, .amn .ams svg, .amn .ams .asa { width: 16px !important; height: 16px !important; }
+.amn .ams.bkH::before, .amn .ams.bkG::before, .amn .ams.bkI::before {
+  content: "" !important; display: inline-block !important;
+  width: 16px !important; height: 16px !important; margin: 0 2px 0 0 !important;
+  -webkit-mask: none !important; mask: none !important;
+  background: center / 16px 16px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/reply.svg") !important;
+}
+.amn .ams.bkG::before { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/forward.svg") !important; }
+html body .amn button[class*="-JX-I"]:not(#haiku-x) {
+  width: auto !important; min-width: 28px !important; height: 24px !important;
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+}
+
+/* Material text buttons inside messages (calendar RSVPs etc.): black
+ * labels on Haiku push buttons; no tonal fills. */
+[role="main"] button:not(#haiku-x):not([class*="-JX-I"]) { height: auto !important; min-height: 24px !important; padding: 2px 12px !important; font: 12px var(--haiku-font) !important; }
+[role="main"] button:not(#haiku-x):not([class*="-JX-I"]) span,
+[role="main"] button:not(#haiku-x):not([class*="-JX-I"]) div { color: #000 !important; background-color: transparent !important; }
+[role="main"] button[aria-pressed="true"]:not(#haiku-x), [role="main"] button[aria-checked="true"]:not(#haiku-x) {
+  background: var(--haiku-button-bg-down) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; font-weight: bold !important;
+}
+/* Calendar invitations: a compact Haiku box flush with the message -
+ * title and time on one line, organizer / calendar on the next, then the
+ * RSVP push buttons. No avatar gutter, no Material padding. */
+.eJPjde { margin: 6px 8px 0 !important; }
+.DC5CAd {
+  background: var(--haiku-panel-light) !important;
+  border: 1px solid var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+  padding: 4px 8px 6px !important;
+  display: flex !important; flex-wrap: wrap !important; align-items: center !important;
+  row-gap: 2px !important; column-gap: 18px !important;
+}
+.DC5CAd > .DjVd6c { flex: 1 0 100% !important; }
+.DC5CAd > .oWn5lf { flex: 0 1 auto !important; width: auto !important; }
+.DC5CAd .YUYD5e > * { text-align: left !important; }
+.DC5CAd * { font-size: 12px !important; color: #000; }
+.DC5CAd .DjVd6c, .DC5CAd .eTybAd, .DC5CAd .oWn5lf, .DC5CAd .qQJMm, .DC5CAd .UbN1Bf, .DC5CAd .oEssId {
+  padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important;
+}
+/* Title (bold) then the time (dim) on one baseline. */
+.DC5CAd .myrUz { flex-direction: row !important; align-items: baseline !important; flex-wrap: wrap !important; column-gap: 10px !important; height: auto !important; }
+.DC5CAd .ARtNsf { order: -1; font: bold 13px/20px var(--haiku-font) !important; height: auto !important; }
+.DC5CAd .HZejI { color: var(--haiku-text-dim) !important; height: auto !important; line-height: 20px !important; }
+/* Organizer and calendar: one 20px line each, 16px grey icons. */
+.DC5CAd .qQJMm, .DC5CAd .UbN1Bf { align-items: center !important; column-gap: 6px !important; }
+.DC5CAd .xfkZuc, .DC5CAd .aAGZCf { width: 16px !important; height: 16px !important; margin: 0 !important; filter: grayscale(1); }
+.DC5CAd .xfkZuc svg, .DC5CAd .aAGZCf svg { width: 16px !important; height: 16px !important; }
+.DC5CAd .mBVPTc, .DC5CAd .YUYD5e { margin: 0 !important; height: auto !important; line-height: 20px !important; }
+.DC5CAd .YUYD5e { flex-direction: row !important; column-gap: 6px !important; flex-wrap: wrap !important; }
+.DC5CAd .bCXFwf { font-weight: normal !important; }
+.DC5CAd .fRbbyb, .DC5CAd .Eigwc { color: var(--haiku-text-dim) !important; height: auto !important; }
+/* RSVP row: 22px push buttons, 6px apart. */
+.DC5CAd .oEssId { margin-top: 4px !important; column-gap: 6px !important; align-items: center !important; }
+.DC5CAd .oEssId > div, .DC5CAd .oEssId .tB5Jxf-M-X-ql-Jf, .DC5CAd .oEssId .tB5Jxf-M-X-ql-Jf > div,
+.DC5CAd .bzc-Uw-LV-Zr, .DC5CAd .FOBRw-aPh { height: auto !important; min-height: 0 !important; margin: 0 !important; }
+html body .DC5CAd button:not(#haiku-x), .DC5CAd .FOBRw-I, .DC5CAd .FOBRw-I.FOBRw-kSE8rc-Fo {
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important;
+  border-radius: 3px !important; box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+  height: 22px !important; min-height: 0 !important; margin: 0 !important; padding: 0 10px !important;
+}
+.DC5CAd .G2Lw2-ank-Rtc0Jf, .DC5CAd .G2Lw2-ank-Rtc0Jf svg { width: 14px !important; height: 14px !important; margin-left: 4px !important; }
+.DC5CAd .FOBRw-I *, .DC5CAd button * { color: #000 !important; }
+/* Subject line: no 28px line box around the label chips. */
+.ha { line-height: 20px !important; }
+.ha .edeTZ { height: 20px !important; line-height: 20px !important; }
+
+/* -- Compose: BeMail's message window ------------------------------------ */
+/* Window body: natural height, no main-window chrome. */
+.haiku-popup [role="main"] { height: auto !important; max-height: none !important; margin: 0 !important; }
+.haiku-popup .nH.aqk.aql.bkL { height: 100vh !important; }
+.haiku-popup .bkK { padding-bottom: 0 !important; }
+.haiku-popup .aoI { height: calc(100vh - 8px) !important; }
+[role="dialog"].nH, .nH.Hd > .nH, .AD {
+  border: 1px solid var(--haiku-frame) !important;
+  background: var(--haiku-panel) !important;
+}
+/* "New Message" strip: a grey panel with the title in bold. */
+.Io, .haiku-popup [role="dialog"] > div:first-child, .haiku-popup .aYF:only-child {
+  background: var(--haiku-panel) !important;
+}
+.Io { border-bottom: 1px solid var(--haiku-shadow) !important; }
+.aYF, .Io .aDk { font: bold 12px var(--haiku-font) !important; color: #000 !important; background: transparent !important; }
+/* Header fields: right-aligned "From:" / "To:" / "Subject:" labels in one
+ * column, 22px sunken text fields, Cc / Bcc to the right of To. */
+.fX, .fX *:not(.Am):not(.Am *) { font-size: 12px !important; }
+.fX, .fX.aiL { height: auto !important; max-height: none !important; overflow: visible !important; }
+.fX .GS td.ok {
+  width: 58px !important; min-width: 58px !important; box-sizing: border-box !important;
+  padding: 0 6px 0 0 !important; text-align: right !important; vertical-align: middle !important;
+}
+.fX .gO { color: #000 !important; }
+.fX .gO::after { content: ":"; }
+.fX .gO.zl, .fX td.ok label { display: inline !important; text-align: right !important; padding: 0 !important; }
+.fX .gO.zl { line-height: 22px !important; }
+.fX .aGb, .fX .afx, .fX .aH9 { height: 24px !important; min-height: 24px !important; }
+.fX input.agP { height: 22px !important; line-height: 22px !important; }
+.fX .wO { display: flex !important; flex-wrap: nowrap !important; align-items: center !important; }
+.fX .wO > .aGb, .fX .wO > div:has(.aGb) { flex: 1 1 auto !important; min-width: 0 !important; }
+.fX .wO > .aA6 { flex: none !important; margin-left: 6px !important; }
+.aoD.hl { background: transparent !important; border-bottom: 0 !important; }
+/* Subject row: only in the compose window - inline replies hide it. */
+.haiku-popup .aoD.az6, .nH.Hd .aoD.az6 { display: flex !important; align-items: center !important; padding: 3px 0 6px !important; background: transparent !important; border-bottom: 0 !important; }
+.haiku-popup .aoD.az6::before, .nH.Hd .aoD.az6::before { content: "Subject:"; flex: none; width: 58px; padding-right: 6px; box-sizing: border-box; text-align: right; font: 12px var(--haiku-font); color: #000; }
+.haiku-popup .aoD.az6 input.aoT, .nH.Hd .aoD.az6 input.aoT { flex: 1 1 auto !important; height: 22px !important; padding: 0 4px !important; }
+/* The text view: white, framed, sunken. */
+.Ar.Au {
+  background: var(--haiku-document) !important;
+  border: 1px solid var(--haiku-shadow) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow-dark) !important;
+  padding: 6px 8px !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+}
+/* Formatting toolbar: a Haiku panel strip of flat tool buttons. */
+[role="toolbar"][aria-label*="Formatting" i], .aX.J-Z-I-J6-H, .oc.gU + div [role="toolbar"] {
+  background: var(--haiku-panel-light) !important;
+  border: 1px solid var(--haiku-shadow) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+  padding: 1px 2px !important;
+}
+[role="toolbar"][aria-label*="Formatting" i] [role="button"],
+[role="toolbar"][aria-label*="Formatting" i] [role="listbox"] {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  color: #000 !important;
+}
+[role="toolbar"][aria-label*="Formatting" i] [role="button"]:hover,
+[role="toolbar"][aria-label*="Formatting" i] [role="listbox"]:hover {
+  background: var(--haiku-button-bg) !important;
+  border-color: var(--haiku-frame) !important;
+}
+[role="toolbar"][aria-label*="Formatting" i] [aria-pressed="true"],
+[role="toolbar"][aria-label*="Formatting" i] [aria-checked="true"] {
+  background: var(--haiku-button-bg-down) !important;
+  border-color: var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+}
+/* Send bar: grey panel; small flat tool buttons that bevel on hover. */
+.aDh, .aDh * { background-color: transparent; }
+.aDh, .btC { background: var(--haiku-panel) !important; padding: 4px 6px !important; align-items: center !important; }
+.aDh { border-top: 1px solid var(--haiku-shadow) !important; }
+.haiku-popup .aDh { height: auto !important; padding: 4px 0 6px !important; }
+.haiku-popup .aDj.ahe { top: auto !important; bottom: 0 !important; margin-top: 0 !important; }
+.btC td { padding: 0 2px !important; vertical-align: middle !important; }
+.btC [role="button"]:not(.aoO):not(.hG),
+.btC [data-tooltip]:not(.aoO):not(.hG) {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  min-width: 24px !important;
+  height: 24px !important;
+}
+.btC [role="button"]:not(.aoO):not(.hG):hover {
+  background: var(--haiku-button-bg) !important;
+  border-color: var(--haiku-frame) !important;
+}
+.btC img, .btC svg { max-width: 18px !important; max-height: 18px !important; }
+.Hm img, .Hm [role="button"] { filter: grayscale(1) brightness(0.2) !important; }
+/* Toggle buttons (Aa formatting etc.): Haiku's sunken bevel when on. */
+.btC .J-Z-I, .btC .J-Z-I > div, .btC [role="button"] > div { border-radius: 0 !important; }
+.btC .J-Z-I::before, .btC .J-Z-I::after, .btC .J-Z-I *::before, .btC .J-Z-I *::after { background: none !important; box-shadow: none !important; border-radius: 0 !important; }
+.btC .J-Z-I.J-Z-I-KO > div, .btC .J-Z-I-KO .J-Z-I-Kv-H { background: transparent !important; outline: none !important; }
+.btC [aria-pressed="true"], .btC .J-Z-I.J-Z-I-JW, .btC .J-Z-I[aria-pressed="true"], .btC .J-Z-I[aria-checked="true"],
+.btC .J-Z-I.J-Z-I-KO {
+  background: #c8c8c8 !important;
+  border-color: var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow-dark), inset -1px -1px 0 #fff !important;
+}
+/* Send + schedule arrow: one Haiku default button (darker frame) with a
+ * split. */
+.btC .T-I.aoO, .btC .T-I.hG {
+  height: 24px !important;
+  min-height: 0 !important;
+  line-height: 22px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  background: var(--haiku-button-bg) !important;
+  border: 1px solid #4c4c4c !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), 0 0 0 1px var(--haiku-shadow) !important;
+  color: #000 !important;
+}
+.btC .T-I.aoO {
+  padding: 0 20px !important;
+  font: bold 12px/22px var(--haiku-font) !important;
+  border-right: 0 !important;
+  border-radius: 3px 0 0 3px !important;
+}
+.btC .T-I.hG {
+  width: 18px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border-left: 1px solid var(--haiku-shadow) !important;
+  border-radius: 0 3px 3px 0 !important;
+}
+.btC .T-I.aoO:hover, .btC .T-I.hG:hover { background: var(--haiku-button-bg-hover) !important; }
+.btC .T-I.aoO:active, .btC .T-I.hG:active { background: var(--haiku-button-bg-down) !important; }
+
+/* Inline replies and forwards (in the thread): the same BeMail look, in
+ * the plain font, without Gmail's avatar column. */
+.M9, .M9 *:not(.Am):not(.Am *) { font-size: 12px !important; }
+.M9 td.aoY, .M9 img.ajn, .M9 .ajn { display: none !important; }
+.M9 .aoI { border: 1px solid var(--haiku-frame) !important; background: var(--haiku-panel) !important; }
+.M9 .aoD.hl { padding: 4px 6px !important; }
+/* "Send +" (send and archive): an ordinary push button beside Send. */
+.btC .T-I.Uo[role="button"]:not(.aoO):not(.hG) {
+  height: 24px !important; line-height: 22px !important; padding: 0 10px !important; margin-right: 6px !important;
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important;
+  border-radius: 3px !important; box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+  font-weight: normal !important; color: #000 !important;
+}
+
+/* -- Settings: a Haiku preferences window --------------------------------- */
+/* No Themes tab: this extension is the theme. */
+.fY[role="tablist"] .f1:has(a[href*="themes"]), .fY[role="tablist"] .fZ:has(a[href*="themes"]) { display: none !important; }
+/* The window tab already says "Settings". */
+.aeH .f2 > .G-atb.qZ { display: none !important; }
+/* Tab row as a Haiku tab view: one wrapped row of tabs, front tab white. */
+.fY[role="tablist"] {
+  display: flex !important; flex-wrap: wrap !important; align-items: flex-end !important; gap: 0 !important;
+  width: auto !important; height: auto !important;
+  padding: 4px 8px 0 !important;
+  border-bottom: 1px solid var(--haiku-shadow) !important;
+}
+.fY[role="tablist"] .f1, .fY[role="tablist"] .fZ {
+  width: auto !important; height: auto !important; min-height: 0 !important; float: none !important;
+  margin: 0 -1px -1px 0 !important; padding: 3px 10px !important;
+  line-height: 18px !important; white-space: nowrap !important; box-sizing: border-box !important;
+  background: linear-gradient(#f4f4f4, #dcdcdc) !important;
+  border: 1px solid var(--haiku-shadow) !important; border-bottom: none !important;
+}
+.fY[role="tablist"] .f1 * { line-height: 18px !important; }
+.fY[role="tablist"] .fZ, .fY[role="tablist"] .f1:has(a[aria-selected="true"]), .fY[role="tablist"] .f1.f3 {
+  background: #fff !important; position: relative; z-index: 1; padding: 4px 10px !important;
+}
+html body .fY[role="tablist"] .f1 a.f0[role="tab"] {
+  display: inline !important; height: auto !important; min-height: 0 !important;
+  margin: 0 !important; padding: 0 !important; line-height: 18px !important;
+  border: none !important; box-shadow: none !important; background: none !important;
+  text-decoration: none !important; color: #000 !important; font-weight: normal !important;
+}
+.fY[role="tablist"] .f1 a[aria-selected="true"] { font-weight: bold !important; }
+html body .fY[role="tablist"] .fZ a.f0[role="tab"] { all: unset !important; font-weight: bold !important; color: #000 !important; line-height: 18px !important; cursor: default !important; }
+html body .fY[role="tablist"] a.f0::before, html body .fY[role="tablist"] a.f0::after { display: none !important; }
+/* One row of tabs: tighter padding, shorter names for the long ones. If
+ * the window is still too narrow, tabs shrink and truncate rather than
+ * wrapping onto a second row. */
+.fY[role="tablist"] { flex-wrap: nowrap !important; overflow: hidden !important; }
+.fY[role="tablist"] .f1, .fY[role="tablist"] .fZ {
+  flex: 0 1 auto !important; min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important;
+  padding-left: 7px !important; padding-right: 7px !important;
+  white-space: nowrap !important;
+}
+html body .fY[role="tablist"] a.f0[role="tab"] { line-height: 18px !important; }
+html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/filters"], html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/fwdandpop"], html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/chat"], html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/shortcuts"] { font-size: 0 !important; display: inline-block !important; height: 18px !important; vertical-align: top !important; }
+html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/filters"]::after, html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/fwdandpop"]::after, html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/chat"]::after, html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/shortcuts"]::after { display: inline !important; font-size: 12px !important; line-height: 18px !important; font-weight: inherit; }
+html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/filters"]::after { content: "Filters & Blocks"; }
+html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/fwdandpop"]::after { content: "Forwarding"; }
+html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/chat"]::after { content: "Chat & Meet"; }
+html body .fY[role="tablist"] a.f0[role="tab"][href$="#settings/shortcuts"]::after { content: "Shortcuts"; }
+
+/* The settings table fits the pane; bold row headings, plain values. */
+.r4 > table.cf, .r4 table.cf { width: 100% !important; max-width: 100% !important; }
+.r4 table.cf table, .r4 table.cf table.cf { width: auto !important; }
+.r4 select, .r4 .C6 input[type="text"] { max-width: 100% !important; }
+.r9 b, .r9 .rc, .r9 tr.rc, .r9 tr.rc td, .r9 label { font-weight: normal !important; }
+/* Haiku preference layout: a narrow right-aligned label column right next
+ * to the controls, rows 5px apart. */
+.r8, .r9 { padding-top: 5px !important; padding-bottom: 5px !important; vertical-align: top !important; }
+td.r8:not(.alL) { width: 170px !important; min-width: 0 !important; max-width: 170px !important; text-align: right !important; padding-right: 12px !important; box-sizing: border-box !important; }
+td.r8 .rc { line-height: 18px !important; }
+/* Labels tab: Tracker-density rows, section headings in bold black. */
+table.alO td.alT, table.alO td.alQ { padding-top: 1px !important; padding-bottom: 1px !important; height: 22px !important; line-height: 20px !important; }
+table.alO td.alT *, table.alO td.alQ * { line-height: 20px !important; }
+table.alO .al6 { padding: 0 !important; margin: 0 !important; height: 20px !important; }
+table.alO td.YQh8id { padding: 0 !important; height: 22px !important; }
+table.alO td.r8.alL { padding: 10px 8px 2px !important; text-align: left !important; font-weight: bold !important; color: #000 !important; }
+table.alO td.alQ b, table.alO td.alQ .alN { font-weight: bold !important; }
+/* Hints under a row heading: small and dim. */
+td.r8:not(.alL) { color: var(--haiku-text-dim) !important; font-size: 11px !important; line-height: 15px !important; }
+td.r8 .rc { color: #000 !important; font-size: 12px !important; }
+.r4 table.cf > colgroup col:first-child { width: 170px !important; }
+tr.r7 { border-bottom: 1px solid var(--haiku-panel-dark) !important; }
+.r4 a, .r9 a { color: var(--haiku-accent) !important; }
+
+/* -- Quick settings (the gear's side panel): a Haiku preferences panel.
+ * Bold title with a real close box, ordinary push buttons, each section a
+ * Haiku BBox (etched frame, label set into the top edge), 20px radio rows,
+ * no preview thumbnails. The Theme section is gone: this extension is the
+ * theme. */
+html body .IU[role="menu"] {
+  background: var(--haiku-panel) !important;
+  border: 0 !important;
+  border-left: 1px solid var(--haiku-frame) !important;
+  box-shadow: inset 1px 0 0 var(--haiku-shine) !important;
+  padding: 0 0 8px !important;
+}
+.IU .Q0.QW {
+  display: flex !important; flex-wrap: wrap !important; align-items: center !important;
+  height: auto !important; padding: 6px 8px 4px !important; gap: 6px !important;
+}
+.IU .VO { flex: 1 1 auto !important; height: 20px !important; line-height: 20px !important; font-weight: bold !important; }
+.IU .Yu { display: none !important; }
+/* Close box: Haiku's small square button with an x. */
+html body .IU button.OB:not(#haiku-x) {
+  position: static !important; flex: none !important;
+  width: 18px !important; height: 18px !important; min-width: 0 !important; padding: 0 !important; margin: 0 !important;
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 3px !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important;
+}
+html body .IU button.OB:not(#haiku-x) > * { display: none !important; }
+html body .IU button.OB:not(#haiku-x)::after {
+  content: "" !important; display: block !important; width: 8px; height: 8px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M1 1 7 7M7 1 1 7' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") center / 8px 8px no-repeat;
+}
+/* "See all settings" / "Manage this organization": plain push buttons. */
+html body .IU button.Tj:not(#haiku-x), html body .IU button.YD:not(#haiku-x) {
+  order: 3; flex: 0 0 auto !important;
+  width: auto !important; height: 24px !important; min-height: 0 !important;
+  margin: 0 !important; padding: 0 14px !important; line-height: 22px !important;
+  font-weight: normal !important;
+}
+/* Sections as BBoxes. */
+.IU fieldset.VM { padding: 0 8px !important; margin: 0 !important; border: 0 !important; }
+.IU .Q3, .IU fieldset.XP {
+  position: relative !important;
+  margin: 12px 0 0 !important; padding: 12px 8px 6px !important;
+  height: auto !important; min-height: 0 !important;
+  border: 1px solid var(--haiku-shadow) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), 1px 1px 0 var(--haiku-shine) !important;
+}
+.IU .Q3:first-child { margin-top: 4px !important; padding: 6px 8px !important; }
+.IU .Q3:not(:has(*:not(:empty))), .IU .Q3:has(.Q5), .IU .Q3:has(.biD) { display: none !important; }
+.IU .Q3 .OG, .IU fieldset.XP > .OG {
+  position: absolute !important; top: -8px; left: 6px;
+  height: 16px !important; line-height: 16px !important; padding: 0 4px !important; margin: 0 !important;
+  background: var(--haiku-panel) !important; font-weight: bold !important; color: #000 !important;
+}
+/* Option rows: radio, label, no thumbnails. */
+.IU img.QZ, .IU img.Vm, .IU img.a2U, .IU label img { display: none !important; }
+.IU fieldset.XP > .Q3, .IU .XM:not(:has(*:not(:empty))) { display: none !important; }
+.IU fieldset.XP { width: auto !important; }
+/* Header: title and close box on the first row, "See all settings" under. */
+.IU .VO { flex: 1 1 0 !important; min-width: 0 !important; order: 0; margin: 0 !important; padding: 0 !important; }
+.IU .Q0.QW::before { content: ""; order: 2; flex-basis: 100%; height: 0; }
+html body .IU button.OB:not(#haiku-x) { order: 1 !important; }
+.IU .a2K, .IU .a22 { padding: 0 !important; margin: 0 !important; }
+.IU .Q3:first-child { border-color: transparent !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+/* Options with a "Customize" button: radio on the first line. */
+.IU label.Vn, .IU label.XL { align-items: flex-start !important; }
+.IU label.Vn span.Vo, .IU label.XL span.Vo { margin-top: 3px !important; }
+html body .IU .Vk button:not(#haiku-x), html body .IU .a22 button:not(#haiku-x) {
+  height: 22px !important; min-height: 0 !important; margin: 2px 0 4px !important; padding: 0 10px !important; line-height: 20px !important;
+}
+.IU .a22 *, .IU .a22 { margin-top: 0 !important; padding-top: 0 !important; }
+.IU label.QX, .IU label.Vn, .IU label.XL {
+  display: flex !important; align-items: center !important;
+  height: auto !important; min-height: 20px !important; margin: 0 !important; padding: 0 !important;
+}
+.IU .Vk { height: auto !important; line-height: 18px !important; margin: 0 !important; padding: 0 !important; }
+.IU .Vk * { line-height: 18px !important; }
+.IU .a2K, .IU .a22 { height: auto !important; min-height: 0 !important; }
+.IU .SU { height: auto !important; align-items: center !important; }
+/* Gmail's Material radio (span.Vo beside a hidden input) as Haiku's. */
+.IU span.Vo {
+  flex: none !important; position: relative !important;
+  width: 13px !important; height: 13px !important; margin: 0 6px 0 0 !important; padding: 0 !important;
+  border: 1px solid var(--haiku-shadow-dark) !important; border-radius: 50% !important;
+  background: radial-gradient(circle at 40% 35%, #ffffff, #e2e2e2) !important;
+  box-shadow: inset 1px 1px 0 #ffffff !important; box-sizing: border-box !important;
+}
+.IU span.Vo *, .IU span.Vo::before, .IU span.Vo::after { display: none !important; }
+/* Conversation view: Gmail's Material checkbox (span.ST) as Haiku's. */
+.IU span.ST { position: relative !important; padding-left: 19px !important; line-height: 20px !important; height: 20px !important; }
+.IU span.ST::after { display: none !important; }
+.IU span.ST::before {
+  content: "" !important; position: absolute !important; left: 0 !important; top: 3px !important;
+  width: 13px !important; height: 13px !important; margin: 0 !important; box-sizing: border-box !important;
+  border: 1px solid var(--haiku-shadow-dark) !important; border-radius: 0 !important;
+  background: var(--haiku-document) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+  -webkit-mask: none !important; mask: none !important; opacity: 1 !important; transform: none !important;
+}
+.IU input:checked + span.ST::before {
+  background: center / 9px 9px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath d='M1 4.5 3.5 7 8 1.5' fill='none' stroke='%231f2f60' stroke-width='1.8'/%3E%3C/svg%3E"), var(--haiku-document) !important;
+}
+/* Its help button: a small "?" push button. */
+html body .IU button.SV:not(#haiku-x) {
+  width: 18px !important; height: 18px !important; min-width: 0 !important; padding: 0 !important; margin-left: 6px !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important;
+}
+html body .IU button.SV:not(#haiku-x) > * { display: none !important; }
+html body .IU button.SV:not(#haiku-x)::after { content: "?" !important; display: block !important; font: bold 11px/1 var(--haiku-font) !important; color: #000 !important; }
+.IU .SU { display: flex !important; align-items: center !important; margin: 0 !important; padding: 0 !important; }
+.IU label.Vn > span.Vo { align-self: flex-start !important; margin-top: 3px !important; }
+.IU input:checked + span.Vo {
+  background: radial-gradient(circle, var(--haiku-mark) 0 2.4px, transparent 3px), radial-gradient(circle at 40% 35%, #ffffff, #e2e2e2) !important;
+}
+
+/* -- Search results and folder filter bars (Spam, Drafts...): scope buttons
+ * the selected scope pressed in. */
+:is(.biW, .a5C) { height: auto !important; padding: 3px 4px !important; align-items: center !important; }
+:is(.biW, .a5C) *, :is(.biW, .a5C) .Bn, :is(.biW, .a5C) .H5 { font-size: 12px !important; color: #000 !important; height: auto !important; line-height: 20px !important; }
+:is(.biW, .a5C) .S0, :is(.biW, .a5C) .a5E, :is(.biW, .a5C) .Im { height: auto !important; }
+:is(.biW, .a5C) .HY { height: 20px !important; padding: 0 !important; margin: 0 !important; }
+:is(.biW, .a5C) .HW .H5 { padding: 0 2px 0 0 !important; }
+:is(.biW, .a5C) .Th .T-I.T-I-ax7, html body :is(.biW, .a5C) .HW, html body :is(.biW, .a5C) .HW.aGe {
+  height: 22px !important; min-height: 0 !important; margin: 0 2px 0 0 !important;
+  padding: 0 8px !important; line-height: 20px !important;
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important;
+  border-radius: 3px !important; box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+}
+html body :is(.biW, .a5C) .Th .T-I.T-I-ax7.qO {
+  background: var(--haiku-button-bg-down) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+}
+html body :is(.biW, .a5C) .Th .T-I.T-I-ax7.qO * { font-weight: bold !important; }
+
+/* -- Material alerts (Unsubscribe, confirmations): a Haiku BAlert - grey
+ * panel, bold title, 12px text, 24px push buttons with black labels; the
+ * last (default) button gets Haiku's heavier default frame. */
+html body [role="alertdialog"].uW2Fw-bHo, html body .uW2Fw-bHo {
+  background: var(--haiku-panel) !important; color: #000 !important;
+  border: 1px solid var(--haiku-shadow-dark) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), 2px 2px 0 rgba(0, 0, 0, .3) !important;
+  max-width: 460px !important;
+}
+html body .uW2Fw-bHo .uW2Fw-bHp { padding: 10px 14px 4px !important; margin: 0 !important; }
+html body .uW2Fw-bHo .uW2Fw-bHp, html body .uW2Fw-bHo .uW2Fw-bHp * { font: bold 14px/20px var(--haiku-font) !important; color: #000 !important; }
+html body .uW2Fw-bHo .uW2Fw-bHk { padding: 0 14px !important; }
+html body .uW2Fw-bHo .uW2Fw-bHk, html body .uW2Fw-bHo .uW2Fw-bHk *:not(a) { font-size: 12px !important; line-height: 17px !important; color: #000 !important; }
+html body .uW2Fw-bHo .uW2Fw-bHg { padding: 10px 12px 10px !important; gap: 6px !important; min-height: 0 !important; }
+html body .uW2Fw-bHo .uW2Fw-bHg > * { margin: 0 !important; min-height: 0 !important; height: auto !important; }
+html body .uW2Fw-bHo button {
+  height: 24px !important; min-height: 0 !important; min-width: 72px !important;
+  padding: 0 12px !important; margin: 0 !important;
+}
+html body .uW2Fw-bHo button span { font-size: 12px !important; line-height: 22px !important; color: #000 !important; }
+html body .uW2Fw-bHo button .mUIrbf-ano, html body .uW2Fw-bHo button .UTNHae, html body .uW2Fw-bHo button .XjoK4b { display: none !important; }
+html body .uW2Fw-bHo .uW2Fw-bHg > :last-child button { border: 2px solid var(--haiku-shadow-dark) !important; }
+
+/* -- Gmail's summary cards over a message (bills, orders, deliveries...):
+ * the same box as calendar invitations, but all on one line - status
+ * label, sender, the key facts, then the action buttons. */
+html body .DC5CAd:has(> .mNKakd) {
+  flex-wrap: wrap !important; align-items: center !important;
+  column-gap: 12px !important; row-gap: 2px !important; padding: 3px 8px !important;
+}
+html body .DC5CAd:has(> .mNKakd) > * { flex: 0 1 auto !important; width: auto !important; min-height: 0 !important; margin: 0 !important; }
+html body .DC5CAd:has(> .mNKakd) > .S7Hs9e {
+  display: block !important; padding: 0 6px !important; line-height: 18px !important; height: 20px !important; box-sizing: border-box !important;
+  background: var(--haiku-document) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important;
+}
+html body .DC5CAd:has(> .mNKakd) > .S7Hs9e * { line-height: 18px !important; }
+html body .DC5CAd:has(> .mNKakd) > .mNKakd { padding: 0 !important; display: flex !important; align-items: center !important; gap: 6px !important; }
+html body .DC5CAd:has(> .mNKakd) > .mNKakd .AmH9I, html body .DC5CAd:has(> .mNKakd) > .mNKakd .a8DSAf { height: auto !important; display: flex !important; align-items: center !important; }
+html body .DC5CAd:has(> .mNKakd) > .mNKakd .b4qJse { font-weight: bold !important; line-height: 20px !important; }
+html body .DC5CAd:has(> .mNKakd) > .mNKakd .WoREBc { display: none !important; } /* white brand logos vanish on grey */
+html body .DC5CAd .cfNpi { padding: 0 !important; display: flex !important; align-items: center !important; gap: 8px !important; }
+html body .DC5CAd .cfNpi .Ix2fhd { line-height: 20px !important; height: auto !important; }
+html body .DC5CAd .cfNpi .Ix2fhd:first-child { font-weight: bold !important; }
+html body .DC5CAd:has(> .mNKakd) > .DjVd6c:last-child { margin-left: auto !important; }
+/* The folder filter bar sits inside the action bar, with Material margins
+ * and a 32px scroller around it. */
+html body [role="main"] .G-atb .G6 { margin: 3px 0 0 !important; height: auto !important; }
+html body [role="main"] .G-atb .G6 .Ii { margin: 0 !important; height: auto !important; }
+html body [role="main"] .G-atb .G6 .a5C { margin: 0 !important; padding: 0 !important; }
+html body [role="main"] .G-atb .G6 .a5D { height: 22px !important; }
+html body [role="main"] .G-atb .G6 :is(a, [role="link"]) { color: var(--haiku-accent) !important; }
+/* Folder notices ("Messages in Spam... will be deleted"): one dim line. */
+html body [role="main"] div.ya { padding: 2px 8px !important; margin: 0 !important; font-size: 12px !important; line-height: 18px !important; height: auto !important; }
+html body [role="main"] div.ya > * { height: auto !important; padding-top: 0 !important; padding-bottom: 0 !important; display: inline !important; }
+html body [role="main"] div.ya * { font-size: 12px !important; }
+/* Summary card pieces (order lines, order number, links): no Material
+ * padding, 16px icons, Haiku push buttons. */
+html body .DC5CAd:has(> .mNKakd) .s7IPpf { line-height: 20px !important; color: var(--haiku-text-dim) !important; }
+html body .DC5CAd:has(> .mNKakd) .a8DSAf { gap: 8px !important; flex-direction: row !important; }
+html body .DC5CAd .LDcEQe, html body .DC5CAd .rRANBe { padding: 0 !important; gap: 6px !important; align-items: center !important; }
+html body .DC5CAd .SI7yuc { line-height: 20px !important; }
+html body .DC5CAd .TFa8wd { margin: 0 !important; }
+html body .DC5CAd .TFa8wd :is(span, svg) { width: 16px !important; height: 16px !important; }
+html body .DC5CAd .rRANBe * { line-height: 20px !important; }
+html body .DC5CAd :is(button, .UywwFc-I) {
+  height: 22px !important; min-height: 0 !important; padding: 0 10px !important;
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important;
+  border-radius: 3px !important; box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+}
+html body .DC5CAd :is(button, .UywwFc-I) * { color: #000 !important; font-size: 12px !important; line-height: 20px !important; }
+html body .DC5CAd :is(button, .UywwFc-I) :is([class$="-ano"], [class$="-UHGRz"], .UTNHae) { display: none !important; }
+html body .DC5CAd .UywwFc-I { display: inline-flex !important; align-items: center !important; }
+html body .DC5CAd .oEssId > *, html body .DC5CAd .bzc-Uw-LV-Zr { height: auto !important; }
+/* "Order number 112-..." on one line. */
+html body .DC5CAd .YtvlC { flex-direction: row !important; gap: 6px !important; align-items: baseline !important; }
+
+/* -- In-window compose (New Message) as a BeMail window: a yellow Haiku
+ * tab - close box, title, then minimise and zoom boxes - over the framed
+ * window; the Send row and formatting strip at the top, like BeMail's
+ * toolbar, then the text. */
+html body .nH.Hd[role="dialog"] { border: 0 !important; background: transparent !important; box-shadow: none !important; }
+html body .nH.Hd > .nH.Hy { border: 0 !important; background: transparent !important; height: auto !important; box-shadow: none !important; }
+html body .nH.Hd > .nH:not(.Hy) { box-shadow: 2px 2px 0 rgba(0, 0, 0, .25) !important; }
+html body .nH.Hd .Hy table.cf {
+  display: flex !important; align-items: center !important; gap: 7px !important;
+  width: fit-content !important; max-width: calc(100% - 24px) !important; height: 21px !important;
+  padding: 0 6px 0 5px !important; margin: 0 !important; box-sizing: border-box !important;
+  background: linear-gradient(var(--haiku-tab-top), var(--haiku-tab) 60%, #f0bd00) !important;
+  border: 1px solid #8c7300 !important; border-bottom: 0 !important;
+  box-shadow: inset 1px 1px 0 #fff2b0 !important; border-radius: 0 !important;
+}
+html body .nH.Hd .Hy table.cf :is(tbody, tr, td, td.Hm div) { display: contents !important; }
+html body .nH.Hd .Hy .Hp { flex: 0 1 auto !important; width: auto !important; height: auto !important; padding: 0 !important; margin: 0 !important; min-width: 0 !important; overflow: hidden !important; }
+html body .nH.Hd .Hy .Hp :is(h2, .aYF, span) { width: auto !important; font: bold 12px/19px var(--haiku-font) !important; color: #000 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; margin: 0 !important; padding: 0 !important; }
+html body .nH.Hd .Hy button:not(#haiku-x) {
+  flex: none !important; width: 11px !important; height: 11px !important; min-width: 0 !important;
+  margin: 0 !important; padding: 0 !important; position: relative !important; box-sizing: border-box !important;
+  border: 1px solid #8c7300 !important; border-radius: 0 !important;
+  background: linear-gradient(135deg, #fff6c8, #ffd52e) !important;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #e0b000 !important;
+}
+html body .nH.Hd .Hy button:not(#haiku-x) > * { display: none !important; }
+html body .nH.Hd .Hy button:not(#haiku-x):active { background: linear-gradient(135deg, #e0b000, #ffd52e) !important; box-shadow: inset 1px 1px 0 #a88a00 !important; }
+html body .nH.Hd .Hy button:not(#haiku-x).Ha { order: -1 !important; }
+html body .nH.Hd .Hy button:not(#haiku-x).Hl, html body .nH.Hd .Hy button:not(#haiku-x).Hq { order: 1 !important; }
+/* Zoom box: Haiku's two overlapping squares; minimise: a bar. */
+html body .nH.Hd .Hy button:not(#haiku-x).Hq::after {
+  content: "" !important; display: block !important; position: absolute !important; left: 1px !important; top: 1px !important;
+  width: 5px !important; height: 5px !important; border: 1px solid #8c7300 !important; background: #fff6c8 !important;
+}
+html body .nH.Hd .Hy button:not(#haiku-x).Hl::after {
+  content: "" !important; display: block !important; position: absolute !important; left: 2px !important; right: 2px !important; top: 4px !important;
+  height: 1px !important; background: #8c7300 !important;
+}
+/* Toolbar first: the Send row, then formatting, then the text. */
+:is(html body .nH.Hd, html.haiku-popup body) table.iN > tbody { display: flex !important; flex-direction: column !important; }
+:is(html body .nH.Hd, html.haiku-popup body) table.iN > tbody > tr:has(.aDj) { order: -1 !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj { position: static !important; inset: auto !important; width: 100% !important; box-sizing: border-box !important; display: flex !important; flex-direction: column-reverse !important; border-bottom: 1px solid var(--haiku-shadow) !important; margin-bottom: 4px !important; }
+/* Gmail floats the formatting strip just above the Send row; in the
+ * toolbar it sits in the flow under it. */
+:is(html body .nH.Hd, html.haiku-popup body) .aDj .aDl { height: auto !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj .Ur { position: static !important; inset: auto !important; width: auto !important; margin: 0 0 3px !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj .aDh { padding-top: 3px !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj { background: transparent !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj :is(.aDl, .Ur, .aX) { height: auto !important; min-height: 0 !important; padding: 0 !important; background: transparent !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj .J-Z { margin: 0 !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj .aZ { height: auto !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj .aDl > .eq { display: none !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj .aDh { padding: 2px 0 3px !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj tr.btC { padding: 0 !important; height: auto !important; }
+/* Gmail sizes the window assuming the toolbar floats over the text; with
+ * it in the flow, let the window grow to fit (capped by the screen). */
+html body .nH.Hd .aoI { height: auto !important; max-height: calc(100vh - 90px) !important; }
+:is(html body .nH.Hd, html.haiku-popup body) table.iN > tbody > tr > td { display: block !important; width: auto !important; }
+html body .nH.Hd .Hy *:not(table.cf):not(table.cf *) { background: transparent !important; }
+/* Collapsed recipients line (after leaving To): keep BeMail's "To:" label. */
+:is(html body .nH.Hd, html.haiku-popup body) .aoD.hl:not([style*="display: none"]) { display: flex !important; align-items: center !important; padding: 3px 0 !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aoD.hl::before { content: "To:"; flex: none; width: 58px; padding-right: 6px; box-sizing: border-box; text-align: right; font: 12px var(--haiku-font); color: #000; }
+:is(html body .nH.Hd, html.haiku-popup body) .aoD.hl > * { flex: 1 1 auto !important; min-width: 0 !important; margin: 0 !important; padding: 0 0 0 4px !important; text-align: left !important; justify-content: flex-start !important; }
+:is(html body .nH.Hd, html.haiku-popup body) :is(td.HE, .aDg, .aDj .aDl, .aDj .aZ) { background: transparent !important; }
+/* The compose dock's wrapper runs under the status bar: no panel of its own. */
+html body .AD:has(> .nH .nH.Hd), html body .AD:has(.nH.Hd) { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+/* Gmail keeps a 56px white spacer under the text for the toolbar we moved
+ * to the top. */
+:is(html body .nH.Hd, html.haiku-popup body) .GP > .bv8 { display: none !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .GP { height: auto !important; padding-bottom: 0 !important; }
+/* Pop-out compose window: the same yellow tab, with a close box (closes
+ * the window; Gmail keeps the draft, as with its own close). */
+html.haiku-popup .Io { background: transparent !important; border: 0 !important; padding: 0 !important; height: auto !important; }
+html.haiku-popup .Io .aDk {
+  display: inline-flex !important; align-items: center !important; position: relative !important;
+  width: auto !important; max-width: calc(100% - 24px) !important; height: 21px !important; box-sizing: border-box !important;
+  padding: 0 10px 0 23px !important; margin: 0 !important;
+  background: linear-gradient(var(--haiku-tab-top), var(--haiku-tab) 60%, #f0bd00) !important;
+  border: 1px solid #8c7300 !important; border-bottom: 0 !important; box-shadow: inset 1px 1px 0 #fff2b0 !important;
+  font: bold 12px/19px var(--haiku-font) !important; color: #000 !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+}
+html.haiku-popup .Io .aDk::before {
+  content: ""; position: absolute; left: 5px; top: 4px; width: 11px; height: 11px; box-sizing: border-box;
+  border: 1px solid #8c7300; background: linear-gradient(135deg, #fff6c8, #ffd52e);
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #e0b000;
+}
+html.haiku-popup .Io .aDk.haiku-pressing::before { background: linear-gradient(135deg, #e0b000, #ffd52e); box-shadow: inset 1px 1px 0 #a88a00; }
+html.haiku-popup .Io + * { border-top: 1px solid var(--haiku-frame) !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .qz .et > div:empty { display: none !important; }
