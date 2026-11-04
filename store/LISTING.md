@@ -56,6 +56,7 @@ folder use sample data (no real mail).
 | `screenshot-2-message.png` | Screenshot 2 |
 | `screenshot-3-compose.png` | Screenshot 3 |
 | `screenshot-4-settings.png` | Screenshot 4 |
+| `screenshot-5-card.png` | Screenshot 5 (an order card and sender picture) |
 | `promo-440x280.png` | Small promo tile (440×280) |
 | `marquee-1400x560.png` | Marquee promo tile (1400×560, optional) |
 
