@@ -3,6 +3,17 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## Unreleased
+
+Settings fixes.
+
+- Settings → General → Stars shows the star pictures again in the "In use"
+  and "Not in use" lists.
+- Gmail's footer (Program Policies, account activity) no longer sits on top
+  of the Settings page; it's at the end, below the settings.
+- Options Gmail has switched off (for example the IMAP expunge choices while
+  Auto-Expunge is on) now look disabled: greyed out, with dimmed labels.
+
 ## 1.0.1 (4 November 2026)
 
 Fixes for stars and nested labels.

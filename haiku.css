@@ -167,6 +167,16 @@ input[type="checkbox"] {
 input[type="checkbox"]:checked {
   background: center / 9px 9px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath d='M1 4.5 3.5 7 8 1.5' fill='none' stroke='%231f2f60' stroke-width='1.8'/%3E%3C/svg%3E"), var(--haiku-document) !important;
 }
+/* Disabled (Gmail switches some off, e.g. IMAP options while Auto-Expunge
+ * is on): Haiku draws them flat grey, with a dimmed label. */
+input[type="radio"]:disabled, input[type="checkbox"]:disabled {
+  opacity: .45 !important; filter: grayscale(1) !important; cursor: default !important;
+}
+input:is([type="radio"], [type="checkbox"]):disabled + label,
+label:has(> input:is([type="radio"], [type="checkbox"]):disabled),
+td:has(> input:is([type="radio"], [type="checkbox"]):disabled) + td {
+  color: var(--haiku-text-dim) !important; cursor: default !important;
+}
 input[type="radio"]:focus-visible, input[type="checkbox"]:focus-visible {
   outline: 1px solid var(--haiku-focus) !important;
   outline-offset: 1px !important;
@@ -968,7 +978,8 @@ html body [role="tablist"] [role="tab"].aAy[aria-selected="true"] {
 [role="tablist"] [role="tab"][aria-selected="true"] .aKz { font-weight: bold !important; }
 [role="tablist"] [role="tab"] .aKz { padding-left: 10px !important; }
 [role="tablist"] [role="tab"] [style*="background"] { background: transparent !important; }
-[role="tablist"] *::before, [role="tablist"] *::after,
+[role="tablist"] [role="tab"]::before, [role="tablist"] [role="tab"]::after,
+[role="tablist"] [role="tab"] *::before, [role="tablist"] [role="tab"] *::after,
 [role="tablist"] [role="tab"] .aKu, [role="tablist"] [role="tab"] .aKo,
 [role="tablist"] [role="tab"] [class*="bar" i],
 [role="tablist"] [role="tab"] .aKp, [role="tablist"] [role="tab"] .aKt img {
@@ -1820,3 +1831,8 @@ html.haiku-popup .Io + * { border-top: 1px solid var(--haiku-frame) !important; 
 .aqn .TN:is([style*="margin-left:36px"], [style*="margin-left: 36px"]) { padding-left: 54px !important; }
 .aqn .TN:is([style*="margin-left:48px"], [style*="margin-left: 48px"]) { padding-left: 70px !important; }
 .aqn .TN:is([style*="margin-left:60px"], [style*="margin-left: 60px"]) { padding-left: 86px !important; }
+
+/* Settings scrolls the outer area, not the pane: let the pane grow with its
+ * content, or Gmail's footer (Program Policies, account activity) lands in
+ * the middle of the page. */
+[role="main"]:has(> .nH .f2[role="tablist"]) { height: auto !important; max-height: none !important; }
