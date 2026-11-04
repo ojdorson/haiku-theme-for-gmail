@@ -1121,9 +1121,24 @@ h2.hP {
 .gs.gt:has(> .G3 .gE.hI), .kv .gs, .kQ .gs { padding-bottom: 0 !important; }
 .ii.gt { padding: 10px 12px !important; }
 /* Message header: Haiku Mail's grey header panel; when expanded, Beam's
- * dark label column ("From:" / "To:") beside the light value area. No
- * avatars - neither BeMail nor Beam has them. */
-.aju { display: none !important; }
+ * dark label column ("From:" / "To:") beside the light value area. The
+ * sender's picture sits in the panel between the labels and the name, in a
+ * sunken square frame like a photo in Haiku's People app, rather than in
+ * Gmail's gutter beside the whole message. */
+.adn, .adf { position: relative !important; }
+.adn > .aju, .adf > .aju {
+  display: block !important; position: absolute !important; z-index: 2 !important;
+  left: 62px !important; top: 8px !important; width: 34px !important; height: 34px !important;
+  margin: 0 !important; padding: 0 !important;
+}
+.adn > .aju .aFg, .adf > .aju .aFg { display: none !important; }
+:is(.adn, .adf) > .aju :is(.aCi, .aCi > span) { display: block !important; width: 34px !important; height: 34px !important; margin: 0 !important; }
+:is(.adn, .adf) > .aju img.ajn {
+  width: 32px !important; height: 32px !important; border-radius: 0 !important; display: block !important; margin: 0 !important;
+  object-fit: cover !important; background: var(--haiku-document) !important;
+  border: 1px solid var(--haiku-shadow-dark) !important;
+  box-shadow: 1px 1px 0 var(--haiku-shine) !important;
+}
 .gE.iv.gt, .gE.hI {
   background: var(--haiku-panel-light) !important;
   border-top: 1px solid var(--haiku-shine) !important;
@@ -1131,6 +1146,13 @@ h2.hP {
   padding: 4px 6px 4px 8px !important;
 }
 .gE.iv.gt { position: relative !important; padding-left: 62px !important; }
+/* Collapsed messages (name + preview line): the picture at the panel's
+ * left edge, the text beside it. */
+.adf > .aju { left: 8px !important; top: 7px !important; }
+.adf:has(> .aju img.ajn) .gE.hI { padding-left: 50px !important; min-height: 48px !important; box-sizing: border-box !important; }
+.adf > .gs, .adn > .gs { margin-left: 0 !important; }
+/* With a picture beside the name. */
+.adn:has(> .aju img.ajn) .gE.iv.gt { padding-left: 106px !important; min-height: 50px !important; box-sizing: border-box !important; }
 .gE.iv.gt::before {
   content: "From:\A To:"; white-space: pre; position: absolute; left: 0; top: 0; bottom: 0; width: 54px;
   padding: 5px 6px 0 0; box-sizing: border-box; text-align: right;
@@ -1662,7 +1684,18 @@ html body .DC5CAd:has(> .mNKakd) > .S7Hs9e * { line-height: 18px !important; }
 html body .DC5CAd:has(> .mNKakd) > .mNKakd { padding: 0 !important; display: flex !important; align-items: center !important; gap: 6px !important; }
 html body .DC5CAd:has(> .mNKakd) > .mNKakd .AmH9I, html body .DC5CAd:has(> .mNKakd) > .mNKakd .a8DSAf { height: auto !important; display: flex !important; align-items: center !important; }
 html body .DC5CAd:has(> .mNKakd) > .mNKakd .b4qJse { font-weight: bold !important; line-height: 20px !important; }
-html body .DC5CAd:has(> .mNKakd) > .mNKakd .WoREBc { display: none !important; } /* white brand logos vanish on grey */
+/* The product / brand picture: a small sunken well in Haiku's shadow grey,
+ * so white logos (AT&T) show as well as photos and coloured ones. */
+html body .DC5CAd:has(> .mNKakd) > .mNKakd .WoREBc {
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  flex: none !important; order: -1 !important; width: 22px !important; height: 22px !important; min-width: 0 !important;
+  margin: 0 !important; padding: 0 !important; box-sizing: border-box !important; overflow: hidden !important;
+  background: var(--haiku-shadow) !important; border: 1px solid var(--haiku-shadow-dark) !important;
+  border-radius: 0 !important; box-shadow: 1px 1px 0 var(--haiku-shine) !important;
+}
+html body .DC5CAd:has(> .mNKakd) > .mNKakd .WoREBc img {
+  width: 20px !important; height: 20px !important; object-fit: contain !important; border-radius: 0 !important; margin: 0 !important;
+}
 html body .DC5CAd .cfNpi { padding: 0 !important; display: flex !important; align-items: center !important; gap: 8px !important; }
 html body .DC5CAd .cfNpi .Ix2fhd { line-height: 20px !important; height: auto !important; }
 html body .DC5CAd .cfNpi .Ix2fhd:first-child { font-weight: bold !important; }
@@ -1836,3 +1869,58 @@ html.haiku-popup .Io + * { border-top: 1px solid var(--haiku-frame) !important; 
  * content, or Gmail's footer (Program Policies, account activity) lands in
  * the middle of the page. */
 [role="main"]:has(> .nH .f2[role="tablist"]) { height: auto !important; max-height: none !important; }
+
+/* Summary cards with a status ("Shipped", "Delivered Mon, Nov 2"): the
+ * status at the right end of the title line, then a line break, then the
+ * details with the buttons at the right. Cards without one (bills) stay on
+ * a single line. */
+html body .DC5CAd:has(> .mNKakd + .DjVd6c > .LDcEQe)::after { content: "" !important; order: 1 !important; flex-basis: 100% !important; height: 0 !important; }
+html body .DC5CAd:has(> .mNKakd + .DjVd6c > .LDcEQe) > * { order: 2 !important; }
+html body .DC5CAd:has(> .mNKakd + .DjVd6c > .LDcEQe) > :is(.S7Hs9e, .mNKakd, .mNKakd + .DjVd6c) { order: 0 !important; }
+html body .DC5CAd > .mNKakd + .DjVd6c:has(> .LDcEQe) { margin-left: auto !important; align-self: center !important; }
+html body .DC5CAd > .mNKakd + .DjVd6c > .LDcEQe { height: auto !important; min-height: 0 !important; display: flex !important; align-items: center !important; }
+html body .DC5CAd > .mNKakd + .DjVd6c > .LDcEQe .SI7yuc { height: 20px !important; line-height: 20px !important; align-items: center !important; }
+/* A long title gives way to the status (truncated with "..."). */
+html body .DC5CAd:has(> .mNKakd + .DjVd6c > .LDcEQe) > .mNKakd { flex: 1 1 0 !important; min-width: 0 !important; overflow: hidden !important; }
+html body .DC5CAd:has(> .mNKakd + .DjVd6c > .LDcEQe) > .mNKakd :is(.AmH9I, .a8DSAf) { min-width: 0 !important; overflow: hidden !important; }
+html body .DC5CAd:has(> .mNKakd + .DjVd6c > .LDcEQe) > .mNKakd .b4qJse { min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; flex: 0 1 auto !important; }
+html body .DC5CAd:has(> .mNKakd + .DjVd6c > .LDcEQe) > .mNKakd .s7IPpf { flex: none !important; white-space: nowrap !important; }
+html body .DC5CAd > .mNKakd + .DjVd6c:has(> .LDcEQe) { flex: none !important; }
+html body .DC5CAd > .mNKakd + .DjVd6c > .LDcEQe { gap: 8px !important; white-space: nowrap !important; justify-content: flex-end !important; width: auto !important; }
+html body .DC5CAd > .mNKakd + .DjVd6c:has(> .LDcEQe) { width: auto !important; max-width: none !important; }
+html body .DC5CAd > .mNKakd + .DjVd6c > .LDcEQe > * { display: flex !important; align-items: center !important; gap: 6px !important; justify-content: flex-end !important; justify-items: end !important; justify-self: end !important; margin-left: auto !important; }
+
+/* -- Older summary cards (.qY: "2 items from Amazon", ordered from, total,
+ * items, View order): the same grey Haiku card as the others. Title and
+ * price on the first line; the details as label / value pairs on the
+ * second, with View order as a push button at its right. No Material icons, no "Is this
+ * correct?" feedback row. */
+html body .nH.qY:has(> * > .qQ) {
+  margin: 6px 8px 0 !important; padding: 3px 8px 4px !important; box-sizing: border-box !important;
+  background: var(--haiku-panel-light) !important; border: 1px solid var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important; border-radius: 0 !important;
+}
+html body .qY .qQ { padding: 0 !important; margin: 0 !important; display: flex !important; flex-wrap: wrap !important; align-items: center !important; column-gap: 12px !important; row-gap: 2px !important; }
+html body .qY .qQ * { font-size: 12px !important; line-height: 20px !important; color: #000 !important; }
+html body .qY .t0 { order: 0 !important; flex: 1 1 0 !important; min-width: 0 !important; margin: 0 !important; height: auto !important; display: flex !important; align-items: center !important; }
+html body .qY .t0 > div:first-child { display: flex !important; align-items: baseline !important; gap: 8px !important; min-width: 0 !important; }
+html body .qY .t1 { font-weight: bold !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+html body .qY .t2 { color: var(--haiku-text-dim) !important; white-space: nowrap !important; }
+html body .qY .amE:empty { display: none !important; }
+html body .qY .y0 { flex: none !important; margin: 0 0 0 auto !important; padding: 0 !important; height: auto !important; }
+html body .qY .qQ::after { content: "" !important; order: 2 !important; flex-basis: 100% !important; height: 0 !important; }
+html body .qY .tZ { order: 3 !important; flex: 1 1 100% !important; min-width: 0 !important; margin: 0 !important; display: flex !important; align-items: center !important; column-gap: 12px !important; }
+html body .qY .tZ > .y7 { flex: 1 1 0 !important; min-width: 0 !important; }
+html body .qY .tZ > .bga, html body .qY .bga { display: none !important; }
+html body .qY .y7 { display: flex !important; flex-wrap: wrap !important; column-gap: 18px !important; row-gap: 0 !important; margin: 0 !important; }
+html body .qY .tk { padding: 0 !important; margin: 0 !important; display: flex !important; align-items: baseline !important; min-width: 0 !important; width: auto !important; flex: 0 1 auto !important; }
+html body .qY .tk .tl { display: none !important; }
+html body .qY .tg { display: flex !important; align-items: baseline !important; gap: 6px !important; min-width: 0 !important; }
+html body .qY .vL { margin: 0 !important; font-weight: bold !important; white-space: nowrap !important; }
+html body .qY .vU { margin: 0 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 420px !important; }
+html body .qY .y0 a.Vp {
+  display: inline-flex !important; align-items: center !important; height: 22px !important; padding: 0 10px !important; box-sizing: border-box !important;
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 3px !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important; color: #000 !important; text-decoration: none !important;
+}
+html body .qY .y0 a.Vp:hover { background: var(--haiku-button-bg-hover) !important; }

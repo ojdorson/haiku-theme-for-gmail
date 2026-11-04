@@ -301,7 +301,11 @@
     const main = table.closest('[role="main"]').getBoundingClientRect();
     const scroll = table.closest(".Nu") || scroller;
     const right = Math.max(tr.right, scroll.getBoundingClientRect().right);
-    place(head, tr.left, Math.max(sr.top, main.top) - 19, right - tr.left);
+    // Pin the headers to the top of the scrolling list (.Nu), which stays
+    // put under the action bar. Measuring from the pane instead made them
+    // ride up over the window tab once the list scrolled.
+    const listTop = table.closest(".Nu") ? scroll.getBoundingClientRect().top : Math.max(sr.top, main.top);
+    place(head, tr.left, listTop - 19, right - tr.left);
     const base = tr.left;
     const cell = (sel) => first.querySelector(sel);
     const cols = [];
