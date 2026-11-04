@@ -6,6 +6,8 @@ Haiku Mail (BeMail), Beam and Haiku's interface guidelines.
 
 ![Inbox with the Haiku theme (sample data)](store/screenshot-1-inbox.png)
 
+**Current version: 1.0.1.** See the [changelog](CHANGELOG.md) for what's new.
+
 - **BeMail toolbar**: New, Reply, Reply All, Forward, Archive, Trash, Junk,
   Unread, Print, Previous, Next. Each button presses Gmail's own control, so
   Gmail still does the work.

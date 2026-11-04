@@ -16,7 +16,7 @@ import zipfile
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
 OUT = DIST / "haiku-theme-for-gmail"
-SHIP = ["haiku.css", "haiku.js", "README.md", "LICENSE", "CREDITS.md"]
+SHIP = ["haiku.css", "haiku.js", "README.md", "LICENSE", "CREDITS.md", "CHANGELOG.md"]
 GMAIL = "https://mail.google.com/*"
 
 dev = json.loads((ROOT / "manifest.json").read_text())
