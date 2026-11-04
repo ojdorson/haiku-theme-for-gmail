@@ -1057,7 +1057,7 @@ tr.zA .T-KT.T-KT-Jp {
   background-image: url("chrome-extension://__MSG_@@extension_id__/icons/star-on.svg") !important;
   opacity: 1;
 }
-tr.zA .T-KT::before, tr.zA .T-KT:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]) > * { display: none !important; }
+tr.zA .T-KT:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"])::before, tr.zA .T-KT:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]) > * { display: none !important; }
 /* Attachment chips in rows become a small file icon. */
 tr.zA .brd, tr.zA .bqY, tr.zA .aKS { display: none !important; }
 tr.zA .yf.xY img, tr.zA .aZo {
@@ -1140,7 +1140,7 @@ h2.hP {
   opacity: .6;
 }
 .gE .T-KT.T-KT-Jp { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/star-on.svg") !important; opacity: 1; }
-.gE .T-KT::before, .gE :is(.zd:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]), :not(.zd)) > .T-KT > *, .gE :is(.zd:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]), :not(.zd)) > .T-KT svg { display: none !important; }
+.gE :is(.zd:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]), :not(.zd)) > .T-KT::before, .gE :is(.zd:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]), :not(.zd)) > .T-KT > *, .gE :is(.zd:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]), :not(.zd)) > .T-KT svg { display: none !important; }
 /* Attachments: Beam's lighter grey band under the header. */
 .hq.gt { background: var(--haiku-panel-light) !important; border-top: 1px solid var(--haiku-shine) !important; border-bottom: 1px solid var(--haiku-shadow) !important; padding: 4px 8px !important; }
 
@@ -1784,7 +1784,8 @@ html.haiku-popup .Io + * { border-top: 1px solid var(--haiku-frame) !important; 
  * state is in the label, not the T-KT-Jp class. Any star type shows Haiku's
  * star (Haiku blue for a plain star), tinted to Gmail's colour. The
  * symbol types (bang, check, info, question, guillemet) have no Haiku
- * counterpart: the rules above leave them to Gmail's own icon. */
+ * counterpart: the rules above leave them to Gmail's own icon, which Gmail
+ * draws as an image in the star's ::before. */
 :is(tr.zA, .gE) .T-KT[aria-label^="Starred"]:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]) {
   background-image: url("chrome-extension://__MSG_@@extension_id__/icons/star-on.svg") !important; opacity: 1 !important;
 }
