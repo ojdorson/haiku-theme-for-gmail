@@ -11,7 +11,7 @@ folder use sample data (no real mail).
 
 > Make Gmail look and work like Haiku's BeMail: a BeOS-style toolbar, Tracker message list, yellow window tabs and Haiku controls.
 
-**Category:** Workflow & Planning (alternative: Fun)
+**Category:** Make Chrome Yours → Functionality & UI (the closest fit for a theme)
 
 **Language:** English
 
@@ -40,7 +40,10 @@ folder use sample data (no real mail).
 > no network requests and asks for no permissions beyond running on
 > mail.google.com.
 >
-> Works with Gmail's English interface and default inbox layout. Not
+> Works with Gmail's English interface and default inbox layout. Open source
+> (MIT): https://github.com/ojdorson/haiku-theme-for-gmail
+>
+> Not
 > affiliated with Google or Haiku, Inc. Gmail is a trademark of Google LLC.
 > The icons are Haiku's, used under the MIT License.
 
