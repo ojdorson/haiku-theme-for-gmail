@@ -1811,3 +1811,12 @@ html.haiku-popup .Io + * { border-top: 1px solid var(--haiku-frame) !important; 
 .gE .zd { background: none !important; border-radius: 0 !important; box-shadow: none !important; }
 .gE .zd::before, .gE .zd::after { display: none !important; }
 :is(tr.zA, .gE) .T-KT::after { display: none !important; }
+
+/* Nested labels (School/Oksana): Gmail indents them with an inline
+ * margin-left of 12px per level, which the folder-row reset above zeroes.
+ * Indent them as an outline instead, 16px per level. */
+.aqn .TN:is([style*="margin-left:12px"], [style*="margin-left: 12px"]) { padding-left: 22px !important; }
+.aqn .TN:is([style*="margin-left:24px"], [style*="margin-left: 24px"]) { padding-left: 38px !important; }
+.aqn .TN:is([style*="margin-left:36px"], [style*="margin-left: 36px"]) { padding-left: 54px !important; }
+.aqn .TN:is([style*="margin-left:48px"], [style*="margin-left: 48px"]) { padding-left: 70px !important; }
+.aqn .TN:is([style*="margin-left:60px"], [style*="margin-left: 60px"]) { padding-left: 86px !important; }

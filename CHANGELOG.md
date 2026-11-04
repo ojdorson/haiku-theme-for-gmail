@@ -3,6 +3,11 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## Unreleased
+
+- Nested labels are indented under their parent label in the folder list
+  again (16px per level), like an outline in Tracker.
+
 ## 1.0.1 (4 November 2026)
 
 Fixes for stars.
