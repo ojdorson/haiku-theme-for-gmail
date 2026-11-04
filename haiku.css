@@ -1729,7 +1729,7 @@ html body .nH.Hd .Hy button:not(#haiku-x).Hl::after {
 /* Toolbar first: the Send row, then formatting, then the text. */
 :is(html body .nH.Hd, html.haiku-popup body) table.iN > tbody { display: flex !important; flex-direction: column !important; }
 :is(html body .nH.Hd, html.haiku-popup body) table.iN > tbody > tr:has(.aDj) { order: -1 !important; }
-:is(html body .nH.Hd, html.haiku-popup body) .aDj { position: static !important; inset: auto !important; width: 100% !important; box-sizing: border-box !important; display: flex !important; flex-direction: column-reverse !important; border-bottom: 1px solid var(--haiku-shadow) !important; margin-bottom: 4px !important; }
+:is(html body .nH.Hd, html.haiku-popup body) .aDj { position: static !important; inset: auto !important; width: 100% !important; height: auto !important; justify-content: flex-end !important; box-sizing: border-box !important; display: flex !important; flex-direction: column-reverse !important; border-bottom: 1px solid var(--haiku-shadow) !important; margin-bottom: 4px !important; }
 /* Gmail floats the formatting strip just above the Send row; in the
  * toolbar it sits in the flow under it. */
 :is(html body .nH.Hd, html.haiku-popup body) .aDj .aDl { height: auto !important; }
@@ -1778,3 +1778,4 @@ html.haiku-popup .Io .aDk::before {
 html.haiku-popup .Io .aDk.haiku-pressing::before { background: linear-gradient(135deg, #e0b000, #ffd52e); box-shadow: inset 1px 1px 0 #a88a00; }
 html.haiku-popup .Io + * { border-top: 1px solid var(--haiku-frame) !important; }
 :is(html body .nH.Hd, html.haiku-popup body) .qz .et > div:empty { display: none !important; }
+:is(html body .nH.Hd, html.haiku-popup body) :is(td.HE, .aDg) { height: auto !important; min-height: 0 !important; }
