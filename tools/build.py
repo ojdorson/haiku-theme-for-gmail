@@ -42,6 +42,9 @@ for name in SHIP:
 shutil.copytree(ROOT / "icons", OUT / "icons")
 (OUT / "manifest.json").write_text(json.dumps(release, indent=2) + "\n")
 
+# Chrome Web Store limits (the upload is rejected otherwise).
+assert len(release["description"]) <= 132, f"description is {len(release['description'])} chars; the Web Store allows 132"
+assert len(release["name"]) <= 75, "name is longer than the Web Store's 75 characters"
 # Every file the manifest names must exist.
 for path in [*release["icons"].values(), "haiku.css", "haiku.js"]:
     assert (OUT / path).is_file(), f"missing {path}"

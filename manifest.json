@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Haiku (BeOS) Theme for Gmail",
   "version": "1.0.0",
-  "description": "Restyles Gmail as a Haiku (BeOS) application: BeMail toolbar, Tracker-style message list, yellow window tab, Haiku controls and icons.",
+  "description": "Make Gmail look and work like Haiku's BeMail: a BeOS-style toolbar, Tracker message list, yellow window tabs and Haiku controls.",
   "content_scripts": [
     {
       "matches": [
