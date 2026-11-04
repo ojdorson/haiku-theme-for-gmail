@@ -1780,32 +1780,34 @@ html.haiku-popup .Io + * { border-top: 1px solid var(--haiku-frame) !important; 
 :is(html body .nH.Hd, html.haiku-popup body) .qz .et > div:empty { display: none !important; }
 :is(html body .nH.Hd, html.haiku-popup body) :is(td.HE, .aDg) { height: auto !important; min-height: 0 !important; }
 
-/* -- Stars with Gmail's "superstars" on (several star types): the starred
- * state is in the label, not the T-KT-Jp class. Any star type shows Haiku's
+/* -- Stars with Gmail's "superstars" on (several star types): starred is
+ * the T-KT-Jp class (plain star) or Uieduc (a coloured type). The label only
+ * names the type: while hovered it previews the next click, so it can't
+ * say whether the star is on. Any star type shows Haiku's
  * star (Haiku blue for a plain star), tinted to Gmail's colour. The
  * symbol types (bang, check, info, question, guillemet) have no Haiku
  * counterpart: the rules above leave them to Gmail's own icon, which Gmail
  * draws as an image in the star's ::before. */
-:is(tr.zA, .gE) .T-KT[aria-label^="Starred"]:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]) {
+:is(tr.zA, .gE) .T-KT:is(.T-KT-Jp, .Uieduc):not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]) {
   background-image: url("chrome-extension://__MSG_@@extension_id__/icons/star-on.svg") !important; opacity: 1 !important;
 }
-:is(tr.zA, .gE) .T-KT[aria-label*="yellow-star"] { filter: hue-rotate(208deg) saturate(1.8) brightness(1.05); }
-:is(tr.zA, .gE) .T-KT[aria-label*="red-star"] { filter: hue-rotate(160deg) saturate(1.6) brightness(.9); }
-:is(tr.zA, .gE) .T-KT[aria-label*="orange-star"] { filter: hue-rotate(188deg) saturate(1.6); }
-:is(tr.zA, .gE) .T-KT[aria-label*="green-star"] { filter: hue-rotate(-80deg) saturate(1.2) brightness(.9); }
-:is(tr.zA, .gE) .T-KT[aria-label*="blue-star"] { filter: hue-rotate(20deg) brightness(.85); }
-:is(tr.zA, .gE) .T-KT[aria-label*="purple-star"] { filter: hue-rotate(78deg) saturate(1.2) brightness(.9); }
+:is(tr.zA, .gE) .T-KT.Uieduc[aria-label*="yellow-star"] { filter: hue-rotate(208deg) saturate(1.8) brightness(1.05); }
+:is(tr.zA, .gE) .T-KT.Uieduc[aria-label*="red-star"] { filter: hue-rotate(160deg) saturate(1.6) brightness(.9); }
+:is(tr.zA, .gE) .T-KT.Uieduc[aria-label*="orange-star"] { filter: hue-rotate(188deg) saturate(1.6); }
+:is(tr.zA, .gE) .T-KT.Uieduc[aria-label*="green-star"] { filter: hue-rotate(-80deg) saturate(1.2) brightness(.9); }
+:is(tr.zA, .gE) .T-KT.Uieduc[aria-label*="blue-star"] { filter: hue-rotate(20deg) brightness(.85); }
+:is(tr.zA, .gE) .T-KT.Uieduc[aria-label*="purple-star"] { filter: hue-rotate(78deg) saturate(1.2) brightness(.9); }
 /* In an open message the state is on the star's parent (.zd, a checkbox
  * labelled "Not starred", "Starred" or the star type). */
-.gE .zd:not([aria-label="Not starred"]):not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]) > .T-KT {
+.gE .zd:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]) > .T-KT:is(.T-KT-Jp, .Uieduc) {
   background-image: url("chrome-extension://__MSG_@@extension_id__/icons/star-on.svg") !important; opacity: 1 !important;
 }
-.gE .zd[aria-label*="yellow-star"] > .T-KT { filter: hue-rotate(208deg) saturate(1.8) brightness(1.05); }
-.gE .zd[aria-label*="red-star"] > .T-KT { filter: hue-rotate(160deg) saturate(1.6) brightness(.9); }
-.gE .zd[aria-label*="orange-star"] > .T-KT { filter: hue-rotate(188deg) saturate(1.6); }
-.gE .zd[aria-label*="green-star"] > .T-KT { filter: hue-rotate(-80deg) saturate(1.2) brightness(.9); }
-.gE .zd[aria-label*="blue-star"] > .T-KT { filter: hue-rotate(20deg) brightness(.85); }
-.gE .zd[aria-label*="purple-star"] > .T-KT { filter: hue-rotate(78deg) saturate(1.2) brightness(.9); }
+.gE .zd[aria-label*="yellow-star"] > .T-KT.Uieduc { filter: hue-rotate(208deg) saturate(1.8) brightness(1.05); }
+.gE .zd[aria-label*="red-star"] > .T-KT.Uieduc { filter: hue-rotate(160deg) saturate(1.6) brightness(.9); }
+.gE .zd[aria-label*="orange-star"] > .T-KT.Uieduc { filter: hue-rotate(188deg) saturate(1.6); }
+.gE .zd[aria-label*="green-star"] > .T-KT.Uieduc { filter: hue-rotate(-80deg) saturate(1.2) brightness(.9); }
+.gE .zd[aria-label*="blue-star"] > .T-KT.Uieduc { filter: hue-rotate(20deg) brightness(.85); }
+.gE .zd[aria-label*="purple-star"] > .T-KT.Uieduc { filter: hue-rotate(78deg) saturate(1.2) brightness(.9); }
 .gE .zd { background: none !important; border-radius: 0 !important; box-shadow: none !important; }
 .gE .zd::before, .gE .zd::after { display: none !important; }
 :is(tr.zA, .gE) .T-KT::after { display: none !important; }
