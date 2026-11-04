@@ -3,14 +3,9 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
-## Unreleased
-
-- Nested labels are indented under their parent label in the folder list
-  again (16px per level), like an outline in Tracker.
-
 ## 1.0.1 (4 November 2026)
 
-Fixes for stars.
+Fixes for stars and nested labels.
 
 - Starring now shows with Gmail's multiple star types turned on (Settings →
   General → Stars), in the message list and in open messages.
@@ -20,6 +15,8 @@ Fixes for stars.
 - Unstarring displays correctly straight away; before, the next star showed
   until the pointer moved away.
 - No round grey highlight is left around a star after clicking it.
+- Nested labels are indented under their parent label in the folder list
+  again (16px per level), like an outline in Tracker.
 
 ## 1.0.0 (3 November 2026)
 
