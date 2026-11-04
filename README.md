@@ -33,12 +33,19 @@ makes no network requests.
 
 ## Install
 
-From a release zip:
+**Chrome Web Store:** in review; a one-click install link will appear here.
 
-1. Unzip `haiku-theme-for-gmail-<version>.zip`.
-2. Open `chrome://extensions`, turn on **Developer mode**, click **Load
-   unpacked** and choose the unzipped folder.
+**Early access (manual install):**
+
+1. Download `haiku-theme-for-gmail-<version>.zip` from the
+   [latest release](https://github.com/ojdorson/haiku-theme-for-gmail/releases/latest)
+   and unzip it.
+2. Open `chrome://extensions`, turn on **Developer mode** (top right), click
+   **Load unpacked** and choose the unzipped folder.
 3. Reload Gmail.
+
+A manual install doesn't update itself: download the new release to update.
+When you switch to the Chrome Web Store version, remove the manual copy first.
 
 It works in Chromium-based browsers: Chrome, Chromium, Brave, Edge and
 Vivaldi.
