@@ -1999,3 +1999,29 @@ html body .ha .edeTZ .ahR :is(.hN, .hO) * { color: inherit !important; }
 html body .ha .edeTZ .ahR .wYeeg + .wYeeg { border-left-color: rgba(0, 0, 0, .35) !important; }
 html body .ha .edeTZ .ahR .hO:hover { filter: brightness(1.15) !important; }
 html body .ha .edeTZ .ahR .hO svg, html body .ha .edeTZ .ahR .hO path { fill: currentColor !important; }
+
+/* -- Default buttons (Search in search options, Unsubscribe, confirmations):
+ * BeOS desktop blue with white text, so the default stands out. Gmail
+ * draws its main buttons with the filled component (UywwFc); Material
+ * alerts use one component for both, with the default last. Summary-card
+ * buttons stay grey. */
+html body :is(button.UywwFc-I:not(.DC5CAd *), .uW2Fw-bHo .uW2Fw-bHg > :last-child button):not([disabled]) {
+  background: linear-gradient(#5a8cc0, #336698 60%, #2d5c8a) !important;
+  border: 1px solid #1f3f63 !important; border-radius: 3px !important;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .35) !important;
+}
+html body :is(button.UywwFc-I:not(.DC5CAd *), .uW2Fw-bHo .uW2Fw-bHg > :last-child button):not([disabled]) :is(span, div) { color: #fff !important; }
+html body :is(button.UywwFc-I:not(.DC5CAd *), .uW2Fw-bHo .uW2Fw-bHg > :last-child button):not([disabled]):hover { background: linear-gradient(#6a9ad0, #3d72a6 60%, #336698) !important; }
+html body :is(button.UywwFc-I:not(.DC5CAd *), .uW2Fw-bHo .uW2Fw-bHg > :last-child button):not([disabled]):active { background: linear-gradient(#2d5c8a, #336698) !important; box-shadow: inset 1px 1px 0 rgba(0, 0, 0, .3) !important; }
+/* Search options panel: Gmail strips its fields' borders, leaving only the
+ * top / left inset shadow. Full Haiku text fields. */
+html body .ZZ input:is(.ZH, .nr) {
+  border: 1px solid var(--haiku-shadow) !important; border-radius: 0 !important; box-sizing: border-box !important;
+  height: 22px !important; padding: 0 4px !important; background: var(--haiku-document) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow-dark) !important;
+}
+html body .ZZ input:is(.ZH, .nr):focus { outline: 1px solid var(--haiku-focus) !important; outline-offset: -1px !important; }
+/* Gmail sizes the panel to the search box, which is narrow at the toolbar's
+ * right, so the Size row (label, menu, field, unit menu) ran off the end.
+ * Grow it leftwards from the box's right edge instead. */
+html body .ZF-Av > .SK.ZF-zT:has(> .ZZ) { left: auto !important; right: 0 !important; width: 470px !important; max-width: calc(100vw - 32px) !important; }

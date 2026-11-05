@@ -3,6 +3,19 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.1.2 (5 November 2026)
+
+Clearer default buttons and a tidier search-options panel.
+
+- Default buttons (Search in the search options, Unsubscribe, confirmations)
+  are BeOS desktop blue with white text, so the default stands out.
+  Summary-card buttons stay grey.
+- Search options: every field has the full Haiku frame (some showed only
+  their top and left edges), and the panel is wide enough for the Size row,
+  whose field and unit menu used to run off the edge.
+- Firefox: the release includes a Mozilla-signed `.xpi` you can install
+  directly.
+
 ## 1.1.1 (5 November 2026)
 
 Firefox support, and polish for compose, labels and the action bar.
