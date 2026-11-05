@@ -1,12 +1,12 @@
 # Haiku (BeOS) Theme for Gmail
 
-A Chromium extension that makes Gmail look and behave like a native
+A browser extension for Chrome and Firefox that makes Gmail look and behave like a native
 [Haiku](https://www.haiku-os.org/) (BeOS-lineage) mail client, modelled on
 Haiku Mail (BeMail), Beam and Haiku's interface guidelines.
 
 ![Inbox with the Haiku theme (sample data)](store/screenshot-1-inbox.png)
 
-**Current version: 1.0.3.** See the [changelog](CHANGELOG.md) for what's new.
+**Current version: 1.1.1.** See the [changelog](CHANGELOG.md) for what's new.
 
 - **BeMail toolbar**: New, Reply, Reply All, Forward, Archive, Trash, Junk,
   Unread, Print, Previous, Next. Each button presses Gmail's own control, so
@@ -35,22 +35,28 @@ makes no network requests.
 
 ## Install
 
+Downloads are on the
+[latest release](https://github.com/ojdorson/haiku-theme-for-gmail/releases/latest).
+
+### Firefox
+
+Download `haiku-theme-for-gmail-<version>.xpi` (signed by Mozilla) and open
+it in Firefox, or drag it onto a Firefox window, then confirm **Add**.
+Reload Gmail. Firefox 121 or later; it should also work in Haiku's Firefox.
+
+### Chrome, Chromium, Brave, Edge, Vivaldi
+
 **Chrome Web Store:** in review; a one-click install link will appear here.
 
-**Early access (manual install):**
+Until then:
 
-1. Download `haiku-theme-for-gmail-<version>.zip` from the
-   [latest release](https://github.com/ojdorson/haiku-theme-for-gmail/releases/latest)
-   and unzip it.
+1. Download `haiku-theme-for-gmail-<version>-chrome.zip` and unzip it.
 2. Open `chrome://extensions`, turn on **Developer mode** (top right), click
    **Load unpacked** and choose the unzipped folder.
 3. Reload Gmail.
 
 A manual install doesn't update itself: download the new release to update.
 When you switch to the Chrome Web Store version, remove the manual copy first.
-
-It works in Chromium-based browsers: Chrome, Chromium, Brave, Edge and
-Vivaldi.
 
 ## Notes and limitations
 
@@ -73,7 +79,7 @@ The working folder is the development build. It also loads `dev-bg.js` and
 python3 tools/devserver.py            # hot-swaps haiku.css into open Gmail tabs,
                                       # reloads the extension on other changes
 python3 tools/ask.py '{"selectors": ["tr.zA"], "limit": 2}'   # inspect Gmail's DOM
-python3 tools/build.py                # release build in dist/ (no dev files)
+python3 tools/build.py                # Chrome and Firefox builds in dist/ (no dev files)
 ```
 
 `tools/ask.py` returns tags, classes, geometry and computed styles, never

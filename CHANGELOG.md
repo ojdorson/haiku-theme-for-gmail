@@ -3,6 +3,22 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.1.1 (5 November 2026)
+
+Firefox support, and polish for compose, labels and the action bar.
+
+- **Firefox:** a Firefox version built from the same code, signed by
+  Mozilla. It looks and works the same as in Chrome; only the scrollbars
+  are Firefox's own.
+- Compose: the To field is a single Haiku text field (no white strip beside
+  it), and recipient chips are small framed labels that fit inside it.
+- Labels beside the subject are right-aligned, ending in line with the
+  message header, each as one framed label with its ×. They use the label's
+  Gmail colour, or the BeOS desktop blue when it has none; "External" stays
+  grey.
+- The small action-bar buttons only highlight when the pointer is over
+  them, not 10px away.
+
 ## 1.0.3 (4 November 2026)
 
 Pictures, summary cards and a steadier message list.

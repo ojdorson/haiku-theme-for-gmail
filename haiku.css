@@ -921,6 +921,10 @@ html body .G-atb .T-I.T-I-ax7.T-I-Kq, html body .G-atb .T-I.T-I-ax7.T-I-JO {
   box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; border-radius: 3px !important;
 }
 .G-atb .T-I.T-I-ax7.T-I-JE { opacity: .4 !important; } /* disabled */
+/* Gmail widens each icon's hover target with an empty 40px ::after that
+ * overhangs the 26px button by 10px a side, so hover started well outside
+ * the drawn button. Remove it: the button itself is the target. */
+html body .G-atb .T-I :is(.asa, .G-asx)::after { display: none !important; }
 /* Text-only action buttons (Discard drafts, Delete forever, Not spam...):
  * sized to their label. */
 html body .G-atb .T-I.T-I-ax7:not(:has(.asa)):not(.T-Pm):not(.J-JN-M-I) { width: auto !important; padding: 0 6px !important; white-space: nowrap !important; }
@@ -1290,7 +1294,7 @@ html body .DC5CAd button:not(#haiku-x), .DC5CAd .FOBRw-I, .DC5CAd .FOBRw-I.FOBRw
 .DC5CAd .FOBRw-I *, .DC5CAd button * { color: #000 !important; }
 /* Subject line: no 28px line box around the label chips. */
 .ha { line-height: 20px !important; }
-.ha .edeTZ { height: 20px !important; line-height: 20px !important; }
+.ha .edeTZ { height: 20px !important; line-height: 20px !important; margin-left: 4px !important; gap: 4px !important; } /* 8px after the subject (first child is empty) */
 
 /* -- Compose: BeMail's message window ------------------------------------ */
 /* Window body: natural height, no main-window chrome. */
@@ -1320,8 +1324,34 @@ html body .DC5CAd button:not(#haiku-x), .DC5CAd .FOBRw-I, .DC5CAd .FOBRw-I.FOBRw
 .fX .gO::after { content: ":"; }
 .fX .gO.zl, .fX td.ok label { display: inline !important; text-align: right !important; padding: 0 !important; }
 .fX .gO.zl { line-height: 22px !important; }
-.fX .aGb, .fX .afx, .fX .aH9 { height: 24px !important; min-height: 24px !important; }
+.fX .aGb, .fX .afx, .fX .aH9 { height: auto !important; min-height: 22px !important; }
 .fX input.agP { height: 22px !important; line-height: 22px !important; }
+/* The recipients box (.aGb, holding the chips and the input) is the Haiku
+ * text field; the input inside it is frameless. Otherwise Gmail's white box
+ * showed as a strip beside the input's own frame, with the chips outside it. */
+.fX .aGb {
+  background: var(--haiku-document) !important; box-sizing: border-box !important; padding: 0 0 0 2px !important;
+  border: 1px solid var(--haiku-shadow) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow-dark) !important;
+}
+.fX .aGb:focus-within { outline: 1px solid var(--haiku-focus) !important; outline-offset: -1px !important; }
+.fX .aGb .afx { flex-wrap: wrap !important; align-items: center !important; row-gap: 1px !important; }
+/* Recipient chips: small square framed labels that fit the 22px field
+ * (Gmail's are 24px pills in a 32px white wrapper). Outside addresses keep
+ * Gmail's light orange as a warning tint. */
+.fX .aGb .agh, .fX .aGb .agb { height: auto !important; min-height: 0 !important; background: transparent !important; padding: 0 !important; margin: 0 !important; }
+.fX .aGb .afV {
+  height: 18px !important; margin: 1px 4px 1px 0 !important; box-sizing: border-box !important;
+  border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important;
+  background-color: var(--haiku-panel-light) !important;
+}
+.fX .aGb .afV.ajf { background-color: #fff0d4 !important; } /* outside the organization */
+.fX .aGb .afW { height: 16px !important; padding: 0 2px 0 3px !important; align-items: center !important; gap: 3px !important; }
+.fX .aGb .afW :is(.af2, .af6) { width: 14px !important; height: 14px !important; min-width: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+.fX .aGb .afW :is(.af2, .af6) :is(svg, img, div, span) { max-width: 14px !important; max-height: 14px !important; }
+.fX .aGb .afW .afT { height: 16px !important; line-height: 16px !important; }
+.fX .aGb .afW .afT * { font-size: 12px !important; line-height: 16px !important; }
+.fX .aGb input.agP { background: transparent !important; border: 0 !important; box-shadow: none !important; outline: none !important; height: 20px !important; line-height: 20px !important; }
 .fX .wO { display: flex !important; flex-wrap: nowrap !important; align-items: center !important; }
 .fX .wO > .aGb, .fX .wO > div:has(.aGb) { flex: 1 1 auto !important; min-width: 0 !important; }
 .fX .wO > .aA6 { flex: none !important; margin-left: 6px !important; }
@@ -1924,3 +1954,48 @@ html body .qY .y0 a.Vp {
   box-shadow: inset 1px 1px 0 var(--haiku-shine) !important; color: #000 !important; text-decoration: none !important;
 }
 html body .qY .y0 a.Vp:hover { background: var(--haiku-button-bg-hover) !important; }
+.fX .aGb .aH9 { flex: 1 1 40px !important; min-width: 40px !important; width: auto !important; }
+.fX .aGb .aH9 input.agP { width: 100% !important; min-width: 40px !important; }
+.fX .aGb, .fX .aGb > div, .fX .aGb .afx { max-width: 100% !important; min-width: 0 !important; }
+
+/* Subject-line labels (External, Inbox, Updates): right-aligned on the
+ * subject row, ending in line with the message header panel below. Each is
+ * one 18px framed label; removable ones end in a × behind a thin divider
+ * (Gmail draws the name and the × as two separately framed boxes). */
+html body .ha { display: flex !important; align-items: center !important; }
+html body .ha .edeTZ { margin-left: auto !important; padding-left: 8px !important; align-items: center !important; flex: none !important; }
+html body .ha .edeTZ :is(.aau, .ahR) {
+  height: 18px !important; box-sizing: border-box !important; margin: 0 !important;
+  display: inline-flex !important; align-items: center !important;
+  border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important;
+  background: var(--haiku-panel-light) !important;
+}
+html body .ha .edeTZ .aau { padding: 0 5px !important; line-height: 16px !important; }
+html body .ha .edeTZ .ahR :is(.hN, .wYeeg, .wYeeg > div) {
+  border: 0 !important; height: 16px !important; line-height: 16px !important; margin: 0 !important; background: transparent !important;
+  display: inline-flex !important; align-items: center !important;
+}
+html body .ha .edeTZ .ahR .hN { padding: 0 5px !important; }
+html body .ha .edeTZ .ahR .wYeeg + .wYeeg { border-left: 1px solid var(--haiku-frame) !important; }
+html body .ha .edeTZ .ahR .hO {
+  width: 15px !important; height: 16px !important; padding: 0 !important; margin: 0 !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important; line-height: 16px !important;
+}
+html body .ha .edeTZ .ahR .hO:hover { background: var(--haiku-hover) !important; }
+html body .V8djrc > div:has(> .ha) { flex: 1 1 auto !important; min-width: 0 !important; }
+html body .ha .edeTZ > span, html body .ha .edeTZ > span > div { display: flex !important; align-items: center !important; height: 18px !important; }
+html body .ha .edeTZ > :not(:has(.aau)):not(.ahR) { display: none !important; } /* zero-width button that doubled one gap */
+html body .ha h2.hP { flex: 1 1 auto !important; min-width: 0 !important; } /* long subjects wrap; labels stay at the right */
+/* Gmail labels on the subject line: the label's own Gmail colour, or the
+ * BeOS desktop blue when it has none (Gmail's no-colour grey is #e1e3e1).
+ * "External" is a status, not a label, so it stays grey. */
+html body .ha .edeTZ .ahR { border-color: var(--haiku-shadow-dark) !important; }
+html body .ha .edeTZ .ahR .wYeeg div:is(.hN, .hO) {
+  background: var(--cv-colored-label-bg-color, var(--haiku-accent)) !important;
+  color: var(--cv-colored-label-text-color, #fff) !important;
+}
+html body .ha .edeTZ .ahR .wYeeg div:is(.hN, .hO)[style*="#e1e3e1"] { background: var(--haiku-accent) !important; color: #fff !important; }
+html body .ha .edeTZ .ahR :is(.hN, .hO) * { color: inherit !important; }
+html body .ha .edeTZ .ahR .wYeeg + .wYeeg { border-left-color: rgba(0, 0, 0, .35) !important; }
+html body .ha .edeTZ .ahR .hO:hover { filter: brightness(1.15) !important; }
+html body .ha .edeTZ .ahR .hO svg, html body .ha .edeTZ .ahR .hO path { fill: currentColor !important; }
