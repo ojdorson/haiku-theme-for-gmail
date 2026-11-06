@@ -46,17 +46,20 @@ Reload Gmail. Firefox 121 or later; it should also work in Haiku's Firefox.
 
 ### Chrome, Chromium, Brave, Edge, Vivaldi
 
-**Chrome Web Store:** in review; a one-click install link will appear here.
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/hbklabmgaphaoikehjpkkocdijbjnkco)**
+(one click; updates itself). Reload Gmail afterwards.
 
-Until then:
+The store can be a version or two behind the
+[latest release](https://github.com/ojdorson/haiku-theme-for-gmail/releases/latest)
+while Google reviews updates. To use the newest one now:
 
 1. Download `haiku-theme-for-gmail-<version>-chrome.zip` and unzip it.
 2. Open `chrome://extensions`, turn on **Developer mode** (top right), click
    **Load unpacked** and choose the unzipped folder.
 3. Reload Gmail.
 
-A manual install doesn't update itself: download the new release to update.
-When you switch to the Chrome Web Store version, remove the manual copy first.
+A manual install doesn't update itself. Use either the store version or a
+manual copy, not both.
 
 ## Notes and limitations
 
