@@ -3,6 +3,14 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.1.3 (6 November 2026)
+
+Label menu fix.
+
+- The menu on a label in the folder list (⋮) fits again: "Label color"
+  shows its colour swatch in the checkmark column and its arrow at the
+  right, with no clipping and no horizontal scrollbar.
+
 ## 1.1.2 (5 November 2026)
 
 Clearer default buttons and a tidier search-options panel.

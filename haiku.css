@@ -2025,3 +2025,17 @@ html body .ZZ input:is(.ZH, .nr):focus { outline: 1px solid var(--haiku-focus) !
  * right, so the Size row (label, menu, field, unit menu) ran off the end.
  * Grow it leftwards from the box's right edge instead. */
 html body .ZF-Av > .SK.ZF-zT:has(> .ZZ) { left: auto !important; right: 0 !important; width: 470px !important; max-width: calc(100vw - 32px) !important; }
+/* Label menu's "Label color" item: Gmail slides the colour swatch left into
+ * the item's padding (relative left: -text width) and hangs the submenu
+ * arrow in the right padding with a negative margin. With Haiku's menu
+ * padding both overflowed: swatch and arrow clipped, a horizontal scrollbar.
+ * Lay it out as a plain row instead: swatch, text, arrow at the right. */
+html body .J-N:has(.aH5) .J-N-Jz { display: flex !important; align-items: center !important; }
+html body .J-N:has(.aH5) .J-N-Jz > span:first-child { display: flex !important; align-items: center !important; flex: 1 1 auto !important; }
+html body .J-N .aH5 {
+  order: -1 !important; position: static !important; left: auto !important; right: auto !important;
+  margin: 0 4px 0 -20px !important; width: 16px !important; height: 16px !important; min-width: 16px !important;
+  border-radius: 0 !important; border: 1px solid var(--haiku-shadow-dark) !important; box-sizing: border-box !important;
+  font-size: 11px !important; line-height: 14px !important; justify-content: center !important;
+}
+html body .J-N:has(.aH5) .J-Ph-hFsbo { margin: 0 0 0 12px !important; position: static !important; }
