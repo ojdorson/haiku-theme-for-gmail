@@ -6,7 +6,7 @@ Haiku Mail (BeMail), Beam and Haiku's interface guidelines.
 
 ![Inbox with the Haiku theme (sample data)](store/screenshot-1-inbox.png)
 
-**Current version: 1.1.3.** See the [changelog](CHANGELOG.md) for what's new.
+**Current version: 1.1.4.** See the [changelog](CHANGELOG.md) for what's new.
 
 - **BeMail toolbar**: New, Reply, Reply All, Forward, Archive, Trash, Junk,
   Unread, Print, Previous, Next. Each button presses Gmail's own control, so
@@ -14,7 +14,8 @@ Haiku Mail (BeMail), Beam and Haiku's interface guidelines.
 - **Yellow window tab** over the message pane, titled with the folder or the
   open message's subject.
 - **Tracker-style message list**: 22px rows, column headers, Haiku status
-  icons and stars.
+  icons and stars. Drag the line between From and Subject to resize the
+  From column (double-click it for the default width).
 - **Haiku controls** throughout: bevelled push buttons, sunken text fields,
   Haiku radio buttons, checkboxes, scrollbars, menus and tab views.
 - **Beam-style message header**, a framed calendar-invitation box, and a
@@ -65,8 +66,11 @@ manual copy, not both.
 
 - **English Gmail interface only.** The toolbar finds Gmail's buttons by
   their English labels.
-- **Tested with Gmail's default density and default (non-split) inbox
-  layout.** Other layouts work but are less polished.
+- **Works with every density, inbox type and reading pane layout.**
+  Tested with all three densities (rows stay compact), Default, Important /
+  Unread / Starred first, Priority Inbox and Multiple Inboxes, and the
+  reading pane off, right of or below the list. In a narrow split view,
+  messages show on three lines: sender and date, subject, preview.
 - **Message bodies keep the sender's own formatting.** Only Gmail's interface
   is restyled.
 - **Gmail updates may break parts of the look.** Gmail changes its

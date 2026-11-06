@@ -865,10 +865,40 @@ header[role="banner"] > div:nth-child(2) { max-width: 100vw !important; overflow
   box-sizing: border-box !important;
   flex-direction: column !important;
 }
-[role="main"] > [gh="tl"], [role="main"] .Nr.UI, [role="main"] .Nu.tf.aZ6 {
+[role="main"] > [gh="tl"], [role="main"] .Nr.UI, [role="main"] .Nr.UI:not(:has(> .Nt)) > .Nu.tf.aZ6 {
   flex: 1 1 0 !important;
   min-height: 0 !important;
   height: auto !important;
+}
+/* Split reading pane (.Nt is the divider): the list and the message share
+ * the pane. Both start from zero and may shrink below their content; the
+ * grow factors stay Gmail's own (inline), so dragging the divider works.
+ * Without this the open message took the whole pane and the list
+ * collapsed to a sliver. */
+[role="main"] .Nr.UI:has(> .Nt) > .Nu {
+  flex-basis: 0 !important; flex-shrink: 1 !important;
+  min-height: 0 !important; min-width: 0 !important;
+}
+[role="main"] .Nr.UI.Nf:has(> .Nt) > .Nu { height: auto !important; }
+/* Gmail gives an open message a 608px minimum width, so a narrower reading
+ * pane scrolled sideways; let it wrap to the pane instead. */
+[role="main"] .Nr.UI:has(> .Nt) > .Nu :is(.nH.ao9, .nH.a98, .aHU) { min-width: 0 !important; }
+[role="main"] .Nr.UI:has(> .Nt) > .Nu.S3 { overflow-x: hidden !important; }
+/* In a narrow reading pane the labels drop below the subject instead of
+ * squeezing it to a word per line. */
+[role="main"] .Nr.UI:has(> .Nt) > .Nu .ha { flex-wrap: wrap !important; }
+[role="main"] .Nr.UI:has(> .Nt) > .Nu .ha h2.hP { flex: 1 1 200px !important; }
+/* The header date ("Wed, Nov 4, 4:41 PM (2 days ago)") is cut with "…"
+ * rather than pushing the star and reply buttons out of the pane; the full
+ * date is in its tooltip. Right-hand pane only: below the list there's room. */
+[role="main"] .Nr.UI.Nm:has(> .Nt) > .Nu tr.acZ > td.gF { flex: 1 1 0 !important; min-width: 6em !important; }
+[role="main"] .Nr.UI.Nm:has(> .Nt) > .Nu tr.acZ > td.gH:not(.acX) { flex: 0 1 auto !important; min-width: 0 !important; overflow: hidden !important; }
+[role="main"] .Nr.UI.Nm:has(> .Nt) > .Nu tr.acZ > td.gH:not(.acX) > .gK { width: 100% !important; min-width: 0 !important; }
+[role="main"] .Nr.UI.Nm:has(> .Nt) > .Nu tr.acZ > td.gH:not(.acX) .jvIjkd { flex: none !important; }
+[role="main"] .Nr.UI.Nm:has(> .Nt) > .Nu td.gH .g3 {
+  flex: 0 1 auto !important; min-width: 0 !important;
+  display: inline-block !important; max-width: 8.5em !important; vertical-align: top !important;
+  overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important;
 }
 /* The list itself is the white Tracker document area; room for the
  * column header overlay above it. */
@@ -990,6 +1020,13 @@ html body [role="tablist"] [role="tab"].aAy[aria-selected="true"] {
   display: none !important;
 }
 [role="tablist"] td, [role="tablist"] tr { border-bottom-color: var(--haiku-frame) !important; }
+/* Default and comfortable density add a sender line under each category
+ * name ("AmeriHome Mortgage — Low…"); a 22px Haiku tab has no room for it.
+ * Hide it, and clip anything else that would spill out of the tab. */
+[role="tablist"] [role="tab"] .aKw > .aKs { display: none !important; }
+[role="tablist"] [role="tab"] :is(.aKp, .aKw) { height: auto !important; }
+[role="tablist"] [role="tab"] .aKx { top: 0 !important; }
+html body [role="tablist"] [role="tab"].aAy { overflow: hidden !important; }
 /* "2 new" badge: small accent text, not an orange chip. */
 [role="tablist"] .aDG { background: none !important; font-weight: bold !important; padding: 0 0 0 2px !important; }
 [role="tablist"] .aDG, [role="tablist"] .aDG * { color: var(--haiku-accent) !important; }
@@ -1004,6 +1041,31 @@ tr.zA {
   box-shadow: none !important;
 }
 tr.zA:nth-child(even) { background: #f7f7f7 !important; }
+/* Split reading pane (.Zs): when the list is too narrow for one line,
+ * Gmail wraps a row onto two (sender and date, then subject and preview).
+ * Let the row grow to fit instead of overlapping the next one; a wide
+ * list still gets single 22px lines. */
+[role="main"] .Zs tr.zA { height: auto !important; min-height: 22px !important; }
+/* Wrapped rows get a third line for the preview, in grey, like a mail
+ * list with previews (haiku.js sets the class when rows wrap). */
+.haiku-wrapped-rows [role="main"] .Zs tr.zA > td.a4W { height: auto !important; }
+.haiku-wrapped-rows [role="main"] .Zs tr.zA td.a4W :is(.xS, .xT) { height: auto !important; }
+.haiku-wrapped-rows [role="main"] .Zs tr.zA td.a4W .xT { flex-wrap: wrap !important; }
+.haiku-wrapped-rows [role="main"] .Zs tr.zA td.a4W .yi { order: 0 !important; flex: none !important; }
+.haiku-wrapped-rows [role="main"] .Zs tr.zA td.a4W .y6 { order: 1 !important; flex: 1 1 1px !important; min-width: 0 !important; }
+.haiku-wrapped-rows [role="main"] .Zs tr.zA td.a4W .y2 { order: 2 !important; }
+/* A zero-height, full-width break between the subject and the preview, so
+ * the preview always starts its own line. */
+.haiku-wrapped-rows [role="main"] .Zs tr.zA td.a4W .xT::after {
+  content: "" !important; display: block !important; order: 1 !important;
+  flex: 0 0 100% !important; height: 0 !important;
+}
+.haiku-wrapped-rows [role="main"] .Zs tr.zA td.a4W .y2 {
+  flex: 0 0 100% !important; max-width: 100% !important; margin: 0 !important;
+  overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important;
+  line-height: 20px !important; height: 20px !important;
+}
+
 tr.zA:hover { background: var(--haiku-hover) !important; box-shadow: none !important; }
 tr.zA.x7, tr.zA.x7:hover, tr.zA.btb { background: var(--haiku-selection) !important; }
 tr.zA > td {
@@ -2039,3 +2101,21 @@ html body .J-N .aH5 {
   font-size: 11px !important; line-height: 14px !important; justify-content: center !important;
 }
 html body .J-N:has(.aH5) .J-Ph-hFsbo { margin: 0 0 0 12px !important; position: static !important; }
+/* "Select tabs to enable" (inbox type → Customize): Gmail spaces the rows
+ * with thick white borders, which showed as stripes on the grey dialog. */
+html body [role="dialog"] .aI0 { border-color: transparent !important; }
+
+/* Resizable From column (haiku.js): the grip sits on the line between the
+ * From and Subject headings. The width applies to Gmail's table column
+ * (single list) and to the row's From cell (split view, where rows are
+ * flex boxes). */
+.haiku-column { overflow: visible; }
+.haiku-column-grip {
+  position: absolute; top: 0; right: -4px; width: 8px; height: 18px;
+  cursor: col-resize; z-index: 1;
+}
+html.haiku-from-sized [role="main"] table.F col.yY { width: var(--haiku-from-w) !important; }
+html.haiku-from-sized [role="main"] tr.zA > td.yX {
+  flex: 0 0 var(--haiku-from-w) !important;
+  width: var(--haiku-from-w) !important; max-width: var(--haiku-from-w) !important;
+}

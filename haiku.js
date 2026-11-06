@@ -285,12 +285,81 @@
   }
 
   // --------------------------------------------------- Tracker columns
+  // The From column can be resized by dragging the line between the From and
+  // Subject headings (double-click it for Gmail's default). Remembered in
+  // localStorage, like the folder panel's width.
+  const FROM_KEY = "haiku-from-width";
+  const FROM_MIN = 80;
+  const setFromWidth = (w) => {
+    const root = document.documentElement;
+    if (!w) {
+      root.style.removeProperty("--haiku-from-w");
+      root.classList.remove("haiku-from-sized");
+      return 0;
+    }
+    w = Math.max(FROM_MIN, Math.round(w));
+    root.style.setProperty("--haiku-from-w", `${w}px`);
+    root.classList.add("haiku-from-sized");
+    return w;
+  };
+  try {
+    const saved = parseInt(localStorage.getItem(FROM_KEY), 10);
+    if (saved) setFromWidth(saved);
+  } catch (e) {
+    /* storage unavailable: Gmail's width */
+  }
+
+  function startFromResize(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const table = [...document.querySelectorAll('[role="main"] table.F')].find(isVisible);
+    const from = table && table.querySelector("tr.zA td.yX");
+    if (!from) return;
+    const startX = e.clientX, startW = from.getBoundingClientRect().width;
+    // The setting and the cell's drawn width can differ (Gmail's From cell
+    // spans an extra column in the single list), so measure the difference
+    // once and work in drawn widths.
+    const cur = parseFloat(document.documentElement.style.getPropertyValue("--haiku-from-w"));
+    if (!cur) setFromWidth(startW);
+    const offset = from.getBoundingClientRect().width - (cur || startW);
+    // Leave room for the status icons, a usable Subject and the date.
+    const maxW = Math.max(FROM_MIN, table.getBoundingClientRect().width - 320);
+    document.body.classList.add("haiku-dragging");
+    let w = cur || startW;
+    const move = (ev) => {
+      w = setFromWidth(Math.min(maxW, startW + ev.clientX - startX) - offset);
+      ensureColumns();
+    };
+    const up = () => {
+      window.removeEventListener("mousemove", move, true);
+      window.removeEventListener("mouseup", up, true);
+      document.body.classList.remove("haiku-dragging");
+      try { localStorage.setItem(FROM_KEY, String(w)); } catch (err) { /* ignore */ }
+      window.dispatchEvent(new Event("resize")); // let Gmail re-measure
+    };
+    window.addEventListener("mousemove", move, true);
+    window.addEventListener("mouseup", up, true);
+  }
+
+  function resetFromWidth() {
+    setFromWidth(0);
+    try { localStorage.removeItem(FROM_KEY); } catch (err) { /* ignore */ }
+    window.dispatchEvent(new Event("resize"));
+    schedule();
+  }
+
+  const sized = new WeakSet();
+  const listSize = new ResizeObserver(() => schedule());
+
   function ensureColumns() {
     const table = [...document.querySelectorAll('[role="main"] table.F')].find(isVisible);
     // Measure a row the mouse isn't over: hovering swaps the date cell for
     // Gmail's action buttons and changes the cell widths.
     const first = table && (table.querySelector("tr.zA:not(:hover):not(.aqw)") || table.querySelector("tr.zA"));
-    const head = overlay("haiku-columns");
+    const head = overlay("haiku-columns", (el) => {
+      el.addEventListener("mousedown", (e) => { if (e.target.closest(".haiku-column-grip")) startFromResize(e); });
+      el.addEventListener("dblclick", (e) => { if (e.target.closest(".haiku-column-grip")) resetFromWidth(); });
+    });
     document.documentElement.classList.toggle("haiku-has-columns", !!first);
     head.hidden = !first;
     if (!first) return;
@@ -300,6 +369,12 @@
     const tr = table.getBoundingClientRect();
     const main = table.closest('[role="main"]').getBoundingClientRect();
     const scroll = table.closest(".Nu") || scroller;
+    // Re-measure whenever the list changes size, including when a side
+    // panel (Quick settings) slides in, which fires no other event.
+    if (!sized.has(scroll)) {
+      sized.add(scroll);
+      listSize.observe(scroll);
+    }
     const right = Math.max(tr.right, scroll.getBoundingClientRect().right);
     // Pin the headers to the top of the scrolling list (.Nu), which stays
     // put under the action bar. Measuring from the pane instead made them
@@ -313,9 +388,14 @@
     const from = cell("td.yX");
     const subject = cell("td.xY.a4W") || cell("td.a4W");
     const date = cell("td.xW");
+    // A narrow split-view list wraps the subject onto a second line; a
+    // "Subject" heading over the sender would be wrong, so leave it out and
+    // let "From" run to the date.
+    const wrapped = !!(subject && from && subject.getBoundingClientRect().top > from.getBoundingClientRect().top + 4);
+    document.documentElement.classList.toggle("haiku-wrapped-rows", wrapped);
     if (status && from) cols.push(["Status", status.getBoundingClientRect().left, from.getBoundingClientRect().left]);
-    if (from) cols.push(["From", from.getBoundingClientRect().left, from.getBoundingClientRect().right]);
-    if (subject) cols.push(["Subject", subject.getBoundingClientRect().left, (date || subject).getBoundingClientRect().left]);
+    if (from) cols.push(["From", from.getBoundingClientRect().left, (wrapped && date ? date : from).getBoundingClientRect()[wrapped && date ? "left" : "right"]]);
+    if (subject && !wrapped) cols.push(["Subject", subject.getBoundingClientRect().left, (date || subject).getBoundingClientRect().left]);
     if (date) cols.push(["Date", date.getBoundingClientRect().left, table.getBoundingClientRect().right]);
     const key = cols.map((c) => c.map((v) => (typeof v === "number" ? Math.round(v - base) : v)).join(":")).join("|");
     if (head.dataset.key === key) return;
@@ -325,6 +405,11 @@
         const col = make("div", "haiku-column", name);
         col.style.left = `${Math.round(l - base)}px`;
         col.style.width = `${Math.max(0, Math.round(r - l))}px`;
+        if (name === "From" && !wrapped) {
+          const grip = make("div", "haiku-column-grip");
+          grip.title = "Drag to resize; double-click for the default width";
+          col.append(grip);
+        }
         return col;
       }),
     );

@@ -3,6 +3,25 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.1.4 (6 November 2026)
+
+Every Gmail layout, and a resizable From column.
+
+- **Resizable From column:** drag the line between the From and Subject
+  headings, as in Tracker. The width is remembered; double-click the line
+  for the default.
+- **Reading pane** (right of or below the list) works: the list and the
+  message share the window, the message wraps to fit, and the divider can
+  still be dragged. In a narrow list each message shows on three lines:
+  sender and date, then subject, then a grey preview.
+- In a narrow reading pane, the labels drop below the subject, and the
+  date is shortened so the star and Reply stay in view.
+- Category tabs fit in Gmail's Default and Comfortable densities too: the
+  sender line Gmail adds under each tab name no longer spills out.
+- The column headings stay in line with the columns when a side panel
+  (such as Quick settings) opens.
+- The "Select tabs to enable" dialog no longer has white stripes.
+
 ## 1.1.3 (6 November 2026)
 
 Label menu fix.

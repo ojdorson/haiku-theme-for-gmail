@@ -12,6 +12,8 @@ Commands (JSON object, one per call):
   {"nav": "https://mail.google.com/mail/u/0/#inbox"}
   {"js": "return document.title"}            run JavaScript in the page
   {"click": [x, y]}  {"hover": [x, y]}        real pointer input, CSS px
+  {"drag": [x1, y1, x2, y2]}                  press, move, release
+  {"dblclick": [x, y]}
   {"type": "text"}   {"key": "Enter"}         keyboard input (Escape, Tab...)
   {"shot": "/path/out.png"}                   screenshot of the page area
   {"size": [width, height]}                   set the window size
@@ -66,6 +68,19 @@ def serve():
             if "click" in cmd:
                 chain = chain.click()
             chain.perform()
+            return {"ok": True}
+        if "drag" in cmd or "dblclick" in cmd:
+            body = driver.find_element("tag name", "body")
+            r = driver.execute_script("const r=document.body.getBoundingClientRect();return [r.left,r.top,r.width,r.height]")
+            at = lambda x, y: (int(x - r[0] - r[2] / 2), int(y - r[1] - r[3] / 2))
+            if "dblclick" in cmd:
+                ActionChains(driver).move_to_element_with_offset(body, *at(*cmd["dblclick"])).double_click().perform()
+                return {"ok": True}
+            x1, y1, x2, y2 = cmd["drag"]
+            chain = ActionChains(driver).move_to_element_with_offset(body, *at(x1, y1)).click_and_hold()
+            for i in range(1, 6):  # several steps, like a real drag
+                chain = chain.move_to_element_with_offset(body, *at(x1 + (x2 - x1) * i / 5, y1 + (y2 - y1) * i / 5))
+            chain.release().perform()
             return {"ok": True}
         if "type" in cmd:
             ActionChains(driver).send_keys(cmd["type"]).perform()

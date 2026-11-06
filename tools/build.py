@@ -72,6 +72,11 @@ TARGETS = {
 assert len(base["description"]) <= 132, f"description is {len(base['description'])} chars; the Chrome Web Store allows 132"
 assert len(base["name"]) <= 75, "name is longer than the Chrome Web Store's 75 characters"
 
+# Old versions are on GitHub's Releases page and tagged in git; keep only
+# this build's zips. To rebuild a shipped version, build from its tag.
+for old in DIST.glob("haiku-theme-for-gmail-*.zip"):
+    old.unlink()
+
 for browser, target in TARGETS.items():
     out = DIST / f"haiku-theme-for-gmail-{browser}"
     if out.exists():
