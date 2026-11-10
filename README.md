@@ -41,9 +41,15 @@ Downloads are on the
 
 ### Firefox
 
-Download `haiku-theme-for-gmail-<version>.xpi` (signed by Mozilla) and open
-it in Firefox, or drag it onto a Firefox window, then confirm **Add**.
-Reload Gmail. Firefox 121 or later; it should also work in Haiku's Firefox.
+**[Install from Firefox Add-ons](https://addons.mozilla.org/firefox/addon/haiku-theme-for-gmail/)**
+(one click; updates itself). Reload Gmail afterwards. Firefox 121 or later;
+it should also work in Haiku's Firefox.
+
+Add-ons can be a version behind the
+[latest release](https://github.com/ojdorson/haiku-theme-for-gmail/releases/latest)
+while Mozilla reviews updates. To use the newest one now, download
+`haiku-theme-for-gmail-<version>.xpi` (signed by Mozilla) and open it in
+Firefox, or drag it onto a Firefox window, then confirm **Add**.
 
 ### Chrome, Chromium, Brave, Edge, Vivaldi
 
