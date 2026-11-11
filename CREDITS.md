@@ -31,7 +31,7 @@ magnifying glass from Tracker's query-folder icon over it. `icons/drive.svg`
 is Tracker's network-share icon.
 
 `icons/paperclip.svg` (attachments), `icons/plus.svg` (Save Query),
-`icons/todo.svg`, `icons/stopwatch.svg`, `icons/heart.svg`,
+`icons/todo.svg`, `icons/stopwatch.svg`, `icons/recipes.svg`, `icons/heart.svg`,
 `icons/briefcase.svg` and `icons/picture.svg` (query pictures; the last is a framed miniature after Van Gogh's public-domain
 *Self-Portrait with Bandaged Ear*, 1889) and `icons/delete-forever.svg` (the
 badge on Trash in Spam and Trash) were drawn for this theme in Haiku's icon

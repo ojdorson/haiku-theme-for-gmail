@@ -6,7 +6,7 @@ Haiku Mail (BeMail), Beam and Haiku's interface guidelines.
 
 ![Inbox with the Haiku theme (sample data)](store/screenshot-1-inbox.png)
 
-**Current version: 1.2.0.** See the [changelog](CHANGELOG.md) for what's new.
+**Current version: 1.2.1.** See the [changelog](CHANGELOG.md) for what's new.
 
 - **Actions in the window they act on**, as in BeMail and Tracker: an open
   message has Reply, Reply All, Forward, Archive, Trash, Junk, Unread, Print,

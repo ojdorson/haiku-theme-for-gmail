@@ -2347,3 +2347,109 @@ html body :is(.l2.pfiaof, .apO) { display: none !important; }
  * Haiku's padding, which added a horizontal scrollbar. Let it fit. */
 html body .uW2Fw-bHk .a0K { width: auto !important; max-width: 100% !important; }
 html body .uW2Fw-bHk .a0K :is(img, svg, div) { max-width: 100% !important; }
+
+/* -- Boomerang for Gmail toolbar buttons: its own CSS lifts the inner button
+ * 8px (top:-8px) and uses a 28px logo, so they sat above Gmail's own buttons. */
+html body .boomerang-button > .T-I { top: 0 !important; }
+html body .boomerang-button > .T-I > img.f { width: 22px !important; height: 22px !important; }
+
+/* -- Boomerang's banner over a scheduled message ("Scheduled to return ...
+ * Reschedule / Return Now / Don't Return"): the same grey Haiku card as the
+ * calendar invitations, with Haiku push buttons, instead of Material white. */
+html body .b4g-inline-manage {
+  background: var(--haiku-panel-light) !important; border: 1px solid var(--haiku-frame) !important;
+  border-radius: 0 !important; box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
+  margin: 6px 8px 0 !important; padding: 4px 8px !important; font-family: var(--haiku-font) !important;
+}
+html body .b4g-inline-manage, html body .b4g-inline-manage * { font-size: 12px !important; color: var(--haiku-text) !important; font-family: var(--haiku-font) !important; }
+html body .b4g-inline-manage .b4g-inline-return { display: flex !important; align-items: center !important; flex-wrap: wrap !important; gap: 8px 14px !important; }
+html body .b4g-inline-manage .b4g-inline-controls { display: flex !important; gap: 6px !important; margin-left: auto !important; }
+html body .b4g-inline-manage .by-button {
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 3px !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), inset -1px -1px 0 #cfcfcf !important;
+  height: 22px !important; min-height: 0 !important; padding: 0 10px !important; line-height: 20px !important; text-transform: none !important;
+}
+html body .b4g-inline-manage .by-button:hover { background: var(--haiku-button-bg-hover) !important; }
+html body .b4g-inline-manage .by-button:active { background: var(--haiku-button-bg-down) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; }
+
+/* Its Reschedule popup: a Haiku window - yellow-tab style title, grey body. */
+html body .b4g-inline-popup {
+  background: var(--haiku-panel) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), 2px 2px 0 rgba(0,0,0,.25) !important; font-family: var(--haiku-font) !important;
+}
+html body .b4g-inline-popup h3 {
+  background: var(--haiku-tab) !important; color: var(--haiku-text) !important; font-size: 12px !important;
+  border-bottom: 1px solid var(--haiku-frame) !important; margin: 0 !important; padding: 3px 8px !important;
+}
+html body .b4g-inline-popup, html body .b4g-inline-popup :is(label, select, input, button, span, div) { font-family: var(--haiku-font) !important; font-size: 12px !important; color: var(--haiku-text) !important; }
+
+/* -- Boomerang's suggestion bar over a message ("Return to Inbox? [2 hours
+ * before] Mon, Nov 16, 5PM [Confirm]" and "Add event"): two cards in the same
+ * grey Haiku box as the calendar invitations, with Haiku push buttons and a
+ * Haiku select, instead of Boomerang's blue Material ones. */
+html body #gm-boomerang-magic { height: auto !important; min-height: 0 !important; padding: 6px 8px 0 !important; gap: 8px !important; justify-content: flex-start !important; align-items: stretch !important; }
+html body #gm-boomerang-magic > div.b4g-magic {
+  height: 32px !important; margin: 0 !important; background: var(--haiku-panel-light) !important;
+  border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine) !important; padding: 0 8px !important; box-sizing: border-box !important;
+}
+html body #gm-boomerang-magic, html body #gm-boomerang-magic * { font-family: var(--haiku-font) !important; color: var(--haiku-text) !important; }
+html body #gm-boomerang-magic .b4g-magic-text-wrapper-div, html body #gm-boomerang-magic .b4g-magic-time-wrapper,
+html body #gm-boomerang-magic .b4g-magic-date-found-txt { font-size: 12px !important; margin-left: 6px !important; margin-right: 6px !important; }
+html body #gm-boomerang-magic .f { width: 22px !important; height: 22px !important; }
+html body #gm-boomerang-magic .bcal-custom-select .is-selected, html body #gm-boomerang-magic .bcal-custom-select-items {
+  background: var(--haiku-document) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; font-size: 12px !important;
+}
+html body #gm-boomerang-magic .bcal-custom-select-items > div { background: var(--haiku-document) !important; }
+html body #gm-boomerang-magic .bcal-custom-select-items div:hover, html body #gm-boomerang-magic .same-as-selected { background: var(--haiku-menu-selected) !important; }
+html body #gm-boomerang-magic button {
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 3px !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), inset -1px -1px 0 #cfcfcf !important; width: auto !important; height: 22px !important; padding: 0 8px !important;
+}
+html body #gm-boomerang-magic button > div { background: none !important; width: auto !important; height: auto !important; align-items: center !important; gap: 6px !important; }
+html body #gm-boomerang-magic button:hover { background: var(--haiku-button-bg-hover) !important; }
+html body #gm-boomerang-magic button:active { background: var(--haiku-button-bg-down) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; }
+html body #gm-boomerang-magic button img { width: 16px !important; height: 16px !important; }
+
+/* Boomerang's big "Pause Inbox" sidebar button now lives in the main toolbar
+ * (haiku.js "pause" tool, which presses it): keep it in the page but out of sight. */
+html body #ibp-main { position: absolute !important; left: -9999px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+
+/* Boomerang's suggestion bar, round two: one flat full-width grey bar flush
+ * under the subject (not two floating cards), controls with breathing room,
+ * Confirm a Haiku push button (its blue rules are id-specific, so match them). */
+html body #gm-boomerang-magic {
+  background: var(--haiku-panel-light) !important; border-top: 1px solid var(--haiku-frame) !important; border-bottom: 1px solid var(--haiku-frame) !important;
+  box-shadow: inset 0 1px 0 var(--haiku-shine) !important; margin: 6px 0 0 !important; padding: 4px 8px !important; gap: 14px !important;
+  align-items: center !important; height: auto !important;
+}
+html body #gm-boomerang-magic > div.b4g-magic { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; height: 30px !important; gap: 10px !important; }
+html body #gm-boomerang-magic > div.b4g-magic:first-of-type { margin: 0 !important; }
+html body #gm-boomerang-magic > div.b4g-magic:last-of-type { margin: 0 0 0 auto !important; }
+html body #gm-boomerang-magic #b4g-magic-caption { width: auto !important; min-width: 110px !important; padding: 2px 8px !important; border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important; background: var(--haiku-document) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; }
+html body #gm-boomerang-magic #b4g-confirm-magic {
+  background: var(--haiku-button-bg) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 3px !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), inset -1px -1px 0 #cfcfcf !important; width: auto !important; height: 24px !important;
+  padding: 0 14px !important; margin: 0 0 0 6px !important; font-size: 12px !important; color: var(--haiku-text) !important;
+}
+html body #gm-boomerang-magic #b4g-confirm-magic:hover { background: var(--haiku-button-bg-hover) !important; border: 1px solid var(--haiku-frame) !important; box-shadow: inset 1px 1px 0 var(--haiku-shine), inset -1px -1px 0 #cfcfcf !important; }
+html body #gm-boomerang-magic #b4g-confirm-magic:active, html body #gm-boomerang-magic #b4g-confirm-magic:focus { background: var(--haiku-button-bg-down) !important; border: 1px solid var(--haiku-frame) !important; box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important; }
+
+/* The list window's Boomerang button (.bulkboomerang, not inside .boomerang-button):
+ * same fix as above - Boomerang lifts it 9px and sizes its logo 28px - and it
+ * takes the flat toolbar-button look of its neighbours, not a raised push button. */
+html body .T-I.bulkboomerang {
+  top: 0 !important; height: 25px !important; min-height: 0 !important; display: flex !important; align-items: center !important;
+  background: none !important; border-color: transparent !important; box-shadow: none !important; padding: 0 8px !important;
+}
+html body .T-I.bulkboomerang:hover { background: var(--haiku-hover) !important; border-color: var(--haiku-frame) !important; }
+html body .T-I.bulkboomerang > img.f { width: 22px !important; height: 22px !important; }
+/* Separator bars around the list window's Boomerang button: it is a bare
+ * .T-I, not a .G-Ni group, so the .G-Ni + .G-Ni rule above skipped both sides. */
+html body .G-atb .T-I.bulkboomerang { border-left: 1px solid var(--haiku-shadow) !important; box-shadow: inset 1px 0 0 var(--haiku-shine) !important; border-radius: 0 !important; margin-left: 4px !important; padding-left: 10px !important; }
+html body .G-atb .T-I.bulkboomerang + .G-Ni { border-left: 1px solid var(--haiku-shadow) !important; box-shadow: inset 1px 0 0 var(--haiku-shine) !important; margin-left: 4px !important; }
+/* Tighten the list window's Boomerang button to the message window's: no fixed
+ * width or extra margin, the same 4px padding either side of the logo + label. */
+html body .G-atb .T-I.bulkboomerang { width: auto !important; min-width: 0 !important; max-width: none !important; margin: 0 !important; padding: 0 8px !important; gap: 0 !important; }
+html body .G-atb .T-I.bulkboomerang + .G-Ni { margin-left: 0 !important; }

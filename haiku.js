@@ -65,12 +65,16 @@
   // icons (and two drawn in its style), chosen for what people look for in
   // mail - not Gmail's folders, which already have their own places.
   const QUERY_BADGES = [
-    ["important", "Important"], ["paperclip", "Attachments"], ["heart", "Family and friends"],
-    ["briefcase", "Work"], ["people", "People"], ["clock", "Time-sensitive"], ["todo", "To-do"], ["stopwatch", "Snoozed or waiting"],
-    ["box", "Orders and deliveries"], ["document", "Documents and notes"], ["megaphone", "Newsletters and announcements"],
+    ["heart", "Loved ones"], ["people", "People"], ["paperclip", "Attachments"], ["briefcase", "Work"],
+    ["clock", "Time-sensitive"], ["stopwatch", "Snoozed or waiting"], ["todo", "To-do"],
+    ["recipes", "Recipes"], ["box", "Orders and deliveries"], ["document", "Documents and notes"], ["megaphone", "Newsletters and announcements"],
     ["picture", "Photos"], ["rocket", "Projects"], ["chart", "Reports and statistics"], ["", "None"],
   ];
-  const BADGE_IDS = new Set(QUERY_BADGES.map(([id]) => id));
+  // The built-in queries keep their own pictures even though the Save Query
+  // window doesn't offer them (Unread, Starred: Gmail's own states), and
+  // queries saved earlier with "important" keep theirs.
+  const BADGE_IDS = new Set([...QUERY_BADGES.map(([id]) => id), ...DEFAULT_QUERIES.map((d) => d.badge), "important"]);
+  const DEFAULT_BADGE = new Map(DEFAULT_QUERIES.map((d) => [d.id, d.badge]));
   const QUERY_KEY = "queries";
   const syncStore = (() => {
     try { return chrome.storage && chrome.storage.sync; } catch (e) { return null; }
@@ -80,7 +84,7 @@
     id: String(q.id || ""),
     label: String(q.label || "").trim().slice(0, 40),
     query: String(q.query || "").trim().slice(0, 500),
-    badge: BADGE_IDS.has(q.badge) ? q.badge : "",
+    badge: BADGE_IDS.has(q.badge) ? q.badge : (DEFAULT_BADGE.get(String(q.id)) || ""),
   });
   let QUERIES = DEFAULT_QUERIES.map(cleanQuery);
   let queriesVersion = 0;
@@ -174,6 +178,10 @@
     return [
       { id: "new", label: "New", icon: "compose", selector: '[gh="cm"]', always: true },
       { id: "checkmail", label: "Check Mail", icon: "check-mail", sep: true, always: true, action: () => checkMail() },
+      // Boomerang's Pause Inbox, moved up here from its big sidebar button;
+      // only shown while Boomerang is installed (see updateToolStates).
+      { id: "pause", label: "Pause", icon: "unread", badge: "pause-badge", always: true, title: "Pause Inbox (Boomerang)",
+        action: () => { const b = document.getElementById("ibp-main"); if (b) press(b); } },
       ...QUERIES.map((q, i) => ({ ...q, icon: "query", isQuery: true, sep: i === 0, always: true, action: () => toggleQuery(q) })),
       // Only while a search that isn't saved yet is showing.
       { id: "q-save", label: "Save Query", icon: "query", badge: "plus", sep: !QUERIES.length, always: true,
@@ -369,6 +377,12 @@
     for (const btn of container.querySelectorAll("[data-tool]")) {
       const tool = findTool(btn.dataset.tool);
       if (!tool) continue;
+      if (tool.id === "pause") {
+        const src = document.getElementById("ibp-main");
+        if (btn.hidden === !!src) btn.hidden = !src;
+        const t = src ? (src.textContent.trim() + " (Boomerang)") : "";
+        if (t && btn.title !== t) btn.title = t;
+      }
       const want = toolDisabled(tool) ? "true" : "false";
       if (btn.getAttribute("aria-disabled") !== want) btn.setAttribute("aria-disabled", want);
       if (tool.variants) {

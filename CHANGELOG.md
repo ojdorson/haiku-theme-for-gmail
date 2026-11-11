@@ -3,6 +3,24 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.2.1 (11 November 2026)
+
+Works with Boomerang for Gmail, and a few Save Query picture changes.
+
+- **Boomerang for Gmail** now looks at home. Its toolbar buttons line up with
+  Gmail's own (its stylesheet lifted them 8-9px and used oversized logos), in
+  the message window and in the list, with the same separator bars. Its
+  "Scheduled to return" banner and Reschedule window, and its "Return to
+  Inbox? / Add event" suggestion bar, use the same grey Haiku boxes and push
+  buttons as the calendar invitations. Its big **Pause Inbox** sidebar button
+  moves to the app bar as a **Pause** button (an envelope with a pause badge);
+  it only appears when Boomerang is installed.
+- **Save Query pictures:** reordered (Heart, People, Paperclip, Briefcase,
+  Time-sensitive, Stopwatch, To-do first), "Family and friends" is now
+  "Loved ones", and a new **Recipes** picture replaces Important (queries
+  that already use Important keep it).
+- Fixed: the built-in Unread and Starred queries lost their pictures.
+
 ## 1.2.0 (10 November 2026)
 
 Saved queries, Check Mail, and toolbars that only show what works.
