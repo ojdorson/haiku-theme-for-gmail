@@ -30,10 +30,16 @@ API = "https://chromewebstore.googleapis.com"
 
 
 def token(cfg):
-    return subprocess.run(
+    r = subprocess.run(
         ["gcloud", "auth", "print-access-token",
          f"--impersonate-service-account={cfg['service_account']}", f"--scopes={SCOPE}"],
-        check=True, capture_output=True, text=True).stdout.strip()
+        capture_output=True, text=True)
+    if r.returncode:
+        if "auth login" in r.stderr or "Reauthentication" in r.stderr:
+            sys.exit("gcloud's sign-in has expired (Google asks for it again now and then).\n"
+                     "Run:  gcloud auth login   (or in Claude Code:  ! gcloud auth login)")
+        sys.exit(f"gcloud could not get a token:\n{r.stderr.strip()}")
+    return r.stdout.strip()
 
 
 def call(cfg, method, path, data=None, content_type=None, upload=False):

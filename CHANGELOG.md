@@ -3,6 +3,29 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.2.0 (10 November 2026)
+
+Saved queries, Check Mail, and toolbars that only show what works.
+
+- **Saved queries,** like Tracker's: the app bar has Unread, Starred and
+  Attachments buttons that run a search, and stay pressed while you're in
+  its results (click again to go back). After any search, **Save Query**
+  keeps it as a button of your own. Right-click a query to edit it (name,
+  search and a picture), move it, remove it or restore the defaults.
+  Queries sync across your browsers; extra ones go in a **»** menu.
+- **Check Mail** button in the app bar, and a **Drive** button.
+- **Sidebar** button (Gmail's menu button), labelled to match its tooltip.
+- **Message toolbar:** buttons Gmail can't use are hidden, not greyed out.
+  In Spam and Trash, Archive is gone, Trash becomes **Delete Forever** and
+  Junk becomes **Not Junk**, with their own pictures.
+- New Haiku-style icons: Reply All, Back to list, paperclip for
+  attachments (rows, headers and compose), and query pictures.
+- Keyboard shortcuts overlay in Haiku colours.
+- Search results: Gmail's filter chips no longer overlap the
+  Mail / Conversations switch.
+- New permission: **storage**, used only to save your queries (kept in
+  your browser's own sync storage; nothing is sent anywhere else).
+
 ## 1.1.4 (6 November 2026)
 
 Every Gmail layout, and a resizable From column.

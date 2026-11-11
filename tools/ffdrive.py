@@ -21,8 +21,13 @@ Commands (JSON object, one per call):
   {"tabs": true}  {"switch": handle}  {"close_others": true}
   {"quit": true}
 Results are printed as JSON. Exchange files live in $TMPDIR/haiku-ff.
+Set FF_APPID (e.g. FF_APPID=haiku-test) before "serve" to give the window its own
+app id for compositor rules.
+Set FF_DPPX (e.g. FF_DPPX=3) before "serve" to zoom the whole browser, which
+narrows the page like a small window (Firefox windows can't go below 600px).
 """
 import json
+import os
 import pathlib
 import sys
 import tempfile
@@ -46,6 +51,13 @@ def serve():
     opts = Options()
     opts.add_argument("-profile")
     opts.add_argument(str(PROFILE))
+    if os.environ.get("FF_DPPX"):
+        opts.set_preference("layout.css.devPixelsPerPx", os.environ["FF_DPPX"])
+    # A window-manager app id for the test window, so compositor rules can
+    # keep it off the real screen (e.g. FF_APPID=haiku-test).
+    if os.environ.get("FF_APPID"):
+        opts.add_argument("--name")
+        opts.add_argument(os.environ["FF_APPID"])
     driver = webdriver.Firefox(options=opts)
     addon = driver.install_addon(str(ADDON), temporary=True)
     driver.get("https://mail.google.com/mail/u/0/#inbox")

@@ -9,7 +9,8 @@ Writes, for each browser, an unpacked folder and a zip:
 The working folder is the development build (it loads dev-bg.js and
 dev-content.js, which talk to tools/devserver.py). The releases leave those
 out, inject haiku.css through the manifest instead of hot-swapping it, and
-ask for no permissions beyond running on mail.google.com.
+ask for nothing beyond running on mail.google.com and "storage" (the
+user's saved queries, kept in the browser's synced extension storage).
 
 Browser differences live here, not in the sources:
   - Chrome resolves url() in a content-script stylesheet against the page,
@@ -43,6 +44,9 @@ base = {
     "version": dev["version"],
     "description": dev["description"],
     "icons": dev["icons"],
+    # Saved queries live in storage.sync (synced by the browser's own
+    # account sync; no warning at install).
+    "permissions": ["storage"],
     "content_scripts": [
         {"matches": [GMAIL], "css": ["haiku.css"], "js": ["haiku.js"], "run_at": "document_idle"},
     ],

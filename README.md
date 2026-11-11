@@ -6,11 +6,21 @@ Haiku Mail (BeMail), Beam and Haiku's interface guidelines.
 
 ![Inbox with the Haiku theme (sample data)](store/screenshot-1-inbox.png)
 
-**Current version: 1.1.4.** See the [changelog](CHANGELOG.md) for what's new.
+**Current version: 1.2.0.** See the [changelog](CHANGELOG.md) for what's new.
 
-- **BeMail toolbar**: New, Reply, Reply All, Forward, Archive, Trash, Junk,
-  Unread, Print, Previous, Next. Each button presses Gmail's own control, so
-  Gmail still does the work.
+- **Actions in the window they act on**, as in BeMail and Tracker: an open
+  message has Reply, Reply All, Forward, Archive, Trash, Junk, Unread, Print,
+  Previous and Next in its own toolbar; a message list has Archive, Trash,
+  Junk and Read/Unread for the selected messages. Each button presses
+  Gmail's own control, so Gmail still does the work.
+- **App toolbar**: New, Check Mail, Drive (new window), and Tracker-style
+  **queries**: one click runs a saved Gmail search and shows the results in
+  the list window under the query's name; click it again to go back. Unread,
+  Starred and Attachments come built in.
+- **Your own queries**: run any Gmail search, then **Save Query** - give it a
+  name and a picture. Right-click a query to edit, reorder or remove it.
+  Saved queries sync to your other computers through your browser's sync;
+  those that don't fit go into a Queries menu.
 - **Yellow window tab** over the message pane, titled with the folder or the
   open message's subject.
 - **Tracker-style message list**: 22px rows, column headers, Haiku status
@@ -21,18 +31,22 @@ Haiku Mail (BeMail), Beam and Haiku's interface guidelines.
 - **Beam-style message header**, a framed calendar-invitation box, and a
   BeMail compose window with "To:" and "Subject:" labels.
 - **Resizable folder panel** and a status bar showing the unread count and
-  position.
+  position, with Gmail's account activity (and its Details link) at the
+  right in place of Gmail's footer.
 - **New messages open in a BeMail-style compose window** inside Gmail. Replies and
   forwards stay in the thread; Gmail's pop-out button still works on them.
 - **The tab's close box closes the current view**: an open message goes back
   to its list, Settings or a search back to the Inbox.
-- **Narrow windows** trim the toolbar to the most-used buttons.
+- **Narrow windows** keep the most-used actions in view; the rest move into
+  a » menu.
 - Gmail extras with no BeOS counterpart are hidden: the Google apps grid,
   Gemini, Chat/Meet, emoji reactions and the Material ripples.
 
-Everything happens locally in your browser. The extension requests no
-permissions beyond running on `mail.google.com`. It collects no data and
-makes no network requests.
+Everything happens locally in your browser. The extension runs only on
+`mail.google.com` and has one other permission, `storage`: your saved
+queries are kept in the browser's own extension storage, which your browser
+syncs to your other computers if you use its sync. The extension collects no
+data and makes no network requests.
 
 ## Install
 

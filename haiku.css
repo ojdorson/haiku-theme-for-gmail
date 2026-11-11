@@ -319,6 +319,7 @@ html body .vh .aT { align-items: center !important; }
 /* haiku.js positions these over Gmail without touching Gmail's DOM. */
 body > .haiku-tab-row,
 body > .haiku-columns,
+body > .haiku-msgtools,
 body > .haiku-splitter {
   position: fixed !important;
   z-index: 1;
@@ -425,22 +426,33 @@ body > .haiku-tab-row {
 }
 .haiku-tool[aria-disabled="true"] { color: var(--haiku-shadow) !important; }
 .haiku-tool[aria-disabled="true"] img { opacity: 0.35; filter: grayscale(1); }
-/* Narrow windows: icon-only toolbar. */
-@media (max-width: 1050px) {
-  .haiku-tool span { display: none; }
+/* Query buttons: the query folder with the query's picture over its lower
+ * right (the folder's magnifier stays visible at the lower left). */
+.haiku-icon-stack { position: relative; display: block; width: 22px; height: 22px; pointer-events: none; }
+.haiku-icon-stack > img { display: block; }
+.haiku-tool .haiku-icon-stack > img.haiku-icon-badge {
+  position: absolute; right: -2px; bottom: -2px; width: 14px; height: 14px;
+}
+.haiku-tool[aria-disabled="true"] .haiku-icon-stack img { opacity: 0.35; filter: grayscale(1); }
+/* Save Query (only while an unsaved search shows), the Queries menu button
+ * (only when queries don't fit) and queries moved into that menu. */
+.haiku-tool[hidden] { display: none !important; }
+/* A query whose results are showing: held down, like a pressed BButton. */
+.haiku-tool[aria-pressed="true"] {
+  background: var(--haiku-button-bg-down) !important;
+  border-color: var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+}
+/* Narrow windows: icon-only toolbar (six buttons keep their labels down
+ * to about 760px). */
+@media (max-width: 760px) {
+  .haiku-tool > span:not(.haiku-icon-stack) { display: none; }
   .haiku-tool { min-width: 30px; }
 }
-/* Narrower still: drop the least-used buttons so search, Settings and the
- * account stay on screen. Gmail's own action bar still has all of them. */
-@media (max-width: 860px) {
-  .haiku-tool:is([data-tool="replyall"], [data-tool="print"]) { display: none !important; }
-}
-@media (max-width: 720px) {
-  .haiku-tool:is([data-tool="prev"], [data-tool="next"], [data-tool="unread"]),
-  .haiku-toolbar-sep:has(+ [data-tool="prev"]) { display: none !important; }
-}
+/* Narrower still: Drive goes first, so search, Settings and the account
+ * stay on screen. */
 @media (max-width: 560px) {
-  .haiku-tool:is([data-tool="spam"], [data-tool="forward"]) { display: none !important; }
+  .haiku-tool[data-tool="drive"], .haiku-toolbar-sep:has(+ [data-tool="drive"]) { display: none !important; }
 }
 
 /* Tracker-style column headers over the message list. */
@@ -491,8 +503,9 @@ body > .haiku-columns {
   border-left: 1px solid var(--haiku-shadow);
   padding-left: 8px;
 }
-/* The folder / subject field takes the room and truncates. */
-.haiku-statusbar .haiku-status-folder { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Left: the folder (or subject) and its count, as in a Tracker window;
+ * the folder truncates when space runs out. Right: account activity. */
+.haiku-statusbar .haiku-status-folder { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .haiku-statusbar .haiku-status-pager, .haiku-statusbar .haiku-status-sel { flex: none; white-space: nowrap; }
 
 /* Splitter between the folder panel and the message pane: grey bar with a
@@ -530,11 +543,21 @@ body.haiku-dragging, body.haiku-dragging * { cursor: col-resize !important; user
 /* Elements hidden but kept measurable: haiku.js finds and presses some of
  * them for the main toolbar (Archive, Junk, Trash, Unread, Print,
  * Previous/Next) and reads the pager text for the status bar. */
-.G-atb .lR, .G-atb .nN, .G-atb .nX, .G-atb .m9, .G-atb .bvt,
+.G-atb .lR, .G-atb .nN, .G-atb .nX, .G-atb .m9, .G-atb .bvt, .G-atb .aFi, .G-atb .aFk,
 .G-atb .amD, .G-atb .adg, .G-atb .amH, .G-atb .Dj, .G-atb .Di,
 .G-atb .h0, .G-atb .iG:has(.adl),
-.G-atb .G-Ni:not(:has(.T-I:not(.lR):not(.nN):not(.nX):not(.m9):not(.bvt):not(.amD):not(.adg))),
+.G-atb .G-Ni:not(:has(.T-I:not(.lR):not(.nN):not(.nX):not(.m9):not(.bvt):not(.aFi):not(.aFk):not(.amD):not(.adg))),
 .byY button[aria-label="Print all"] {
+  position: absolute !important;
+  width: 1px !important; height: 1px !important; min-width: 0 !important;
+  margin: 0 !important; padding: 0 !important; border: 0 !important;
+  overflow: hidden !important; clip-path: inset(50%) !important;
+  opacity: 0 !important; pointer-events: none !important;
+}
+/* Spam/Trash's text buttons ("Delete forever", "Not spam") lose to the
+ * text-button sizing rule below, so hide them with matching weight; the
+ * strip's Trash and Junk press them. */
+html body .G-atb .T-I.T-I-ax7:is(.aFi, .aFk) {
   position: absolute !important;
   width: 1px !important; height: 1px !important; min-width: 0 !important;
   margin: 0 !important; padding: 0 !important; border: 0 !important;
@@ -626,7 +649,7 @@ header[role="banner"] div:has(> div > form[role="search"]):not(header > div) {
   min-width: 0 !important;
 }
 header[role="banner"] .gb_ce { flex: 1 1 auto !important; min-width: 0 !important; justify-content: flex-end !important; }
-@media (max-width: 1050px) {
+@media (max-width: 760px) {
   header[role="banner"] div:has(> form[role="search"]) { width: 180px !important; max-width: 180px !important; }
 }
 @media (max-width: 720px) {
@@ -822,6 +845,31 @@ header[role="banner"] > div:nth-child(2) { max-width: 100vw !important; overflow
 /* No Compose button (the toolbar's New does that). Collapsing the folder
  * list hides it completely (Haiku has no icon-rail state). */
 .aqn.aIH .aic, .aqn.aIH.aBA { display: none !important; }
+/* Collapsed, Gmail keeps a 16px gutter for its icon rail, which we don't
+ * draw: let the message pane start at the window edge instead. */
+.bkL:has(> .aqn.aIH.aBA) > .bkK { margin-left: 0 !important; }
+/* The menu button shows and hides the folder list: a Haiku-style "window
+ * with a folder pane" picture instead of Gmail's three-line menu icon. */
+header[role="banner"] [aria-label="Main menu"] svg { visibility: hidden !important; }
+header[role="banner"] [aria-label="Main menu"] {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/sidebar.svg") !important;
+  /* Icon and "Sidebar" label line up with the toolbar's New, Reply...:
+   * 22px icon at the toolbar's icon row, 10px label underneath. */
+  background-position: center 8px !important; background-size: 22px 22px !important; background-repeat: no-repeat !important;
+  position: relative !important;
+}
+header[role="banner"] [aria-label="Main menu"]::after {
+  content: "Sidebar";
+  position: absolute; left: -4px; right: -4px; top: 31px;
+  font: 10px/11px var(--haiku-font); color: #000; text-align: center;
+  white-space: nowrap; pointer-events: none;
+}
+/* Where the toolbar drops its labels (see .haiku-tool span), so does the
+ * sidebar button: icon only, centred. */
+@media (max-width: 760px) {
+  header[role="banner"] [aria-label="Main menu"]::after { content: none; }
+  header[role="banner"] [aria-label="Main menu"] { background-position: center !important; }
+}
 /* Folder rows: 20px, selection in Haiku's blue. */
 .TO, .TN {
   border-radius: 0 !important;
@@ -971,10 +1019,147 @@ html body .G-atb .T-I.T-I-ax7.T-Pm:is(:hover, :active, .T-I-JW, .T-I-Kq, .T-I-JO
 }
 .G-atb .lS .asa > *, .G-atb .uUQygd .asa > *, .G-atb .VJ .asa > *, .G-atb .ns .asa > *,
 .G-atb .lS .asa::before, .G-atb .uUQygd .asa::before, .G-atb .VJ .asa::before, .G-atb .ns .asa::before { display: none !important; }
-.G-atb .lS { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/back.svg"); }
+/* Back to the list: the All Mail drawer with a back arrow. */
+.G-atb .lS { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/back-to-list.svg"); }
 .G-atb .uUQygd { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/snoozed.svg"); }
 .G-atb .VJ { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/scheduled.svg"); }
 .G-atb .ns { --haiku-ico: url("chrome-extension://__MSG_@@extension_id__/icons/folder.svg"); }
+
+/* -- Keyboard shortcuts overlay ("?"): Haiku's tab yellow for the section
+ * headings and keys instead of Google's #dd0; the "Open in a new window |
+ * Close" links in BeOS blue. */
+.wa th.Do, .wa .wh { color: var(--haiku-tab) !important; }
+.wa .wj, .wa .wj .wi, .wa .wj .wi:visited { color: var(--haiku-accent) !important; }
+
+/* -- Window action strips: in an open message, Reply ... Next right after
+ * Back to Inbox; in a list, Archive ... Read/Unread right after the Select
+ * checkbox. At this toolbar's size (haiku.js places the strip; the gap is
+ * reserved here). Same look as the toolbar's own buttons above. */
+html.haiku-has-msgtools .G-atb .G-Ni:is(:has(.lS), :has(> .T-I.T-Pm)) { margin-right: var(--haiku-msgtools-w, 0px) !important; }
+body > .haiku-msgtools {
+  z-index: 4; /* over Gmail's message toolbar (.G-atb, z-index 3) */
+  display: flex; align-items: center;
+  height: 24px; padding: 0 4px;
+  border-left: 1px solid var(--haiku-shadow); box-shadow: inset 1px 0 0 var(--haiku-shine);
+}
+body > .haiku-msgtools[hidden] { display: none !important; }
+.haiku-msgtools-sep {
+  align-self: stretch; width: 0; margin: 0 4px;
+  border-left: 1px solid var(--haiku-shadow); border-right: 1px solid var(--haiku-shine);
+}
+.haiku-msgtool {
+  box-sizing: border-box;
+  width: 26px; height: 24px; margin: 0 1px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent; border-radius: 3px;
+  cursor: default;
+}
+.haiku-msgtool img { width: 20px; height: 20px; pointer-events: none; }
+/* A badge on a strip icon (e.g. the green tick of Not Junk in Spam). */
+.haiku-msgtool .haiku-icon-stack { width: 20px; height: 20px; }
+.haiku-msgtool .haiku-icon-stack > img { width: 20px; height: 20px; }
+.haiku-msgtool .haiku-icon-stack > img.haiku-icon-badge { position: absolute; right: -3px; bottom: -3px; width: 12px; height: 12px; }
+.haiku-msgtool:hover {
+  background: var(--haiku-button-bg); border-color: var(--haiku-frame);
+  box-shadow: inset 1px 1px 0 var(--haiku-shine);
+}
+.haiku-msgtool:active {
+  background: var(--haiku-button-bg-down); border-color: var(--haiku-frame);
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow);
+}
+.haiku-msgtool[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+/* Too narrow for the whole strip: the spare buttons (and separators left
+ * with nothing to separate) move into the » menu. */
+.haiku-msgtools-more { display: none; font: bold 15px/1 var(--haiku-font); color: #000; padding-bottom: 2px; }
+.haiku-msgtools.haiku-compact .haiku-msgtools-more { display: inline-flex; }
+.haiku-msgtools.haiku-compact [data-spare] { display: none; }
+/* Actions Gmail doesn't offer in this view at all (Archive in Spam/Trash). */
+.haiku-msgtool[hidden] { display: none !important; }
+.haiku-msgtools-more[aria-expanded="true"] {
+  background: var(--haiku-button-bg-down); border-color: var(--haiku-frame);
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow);
+}
+/* The » menu: a Haiku pop-up menu (BMenu) - panel grey, 1px frame,
+ * shadow, items highlighted in the menu-selection grey. */
+body > .haiku-menu {
+  position: fixed; z-index: 1000; box-sizing: border-box;
+  min-width: 140px; padding: 2px 0;
+  background: var(--haiku-panel-light); border: 1px solid var(--haiku-frame);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, .35);
+  font: 12px var(--haiku-font); color: #000;
+}
+.haiku-menu-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 2px 14px 2px 6px; cursor: default; white-space: nowrap;
+}
+.haiku-menu-item img { width: 16px; height: 16px; pointer-events: none; }
+.haiku-menu-item:hover:not([aria-disabled="true"]) { background: var(--haiku-menu-selected); }
+.haiku-menu-item[aria-disabled="true"] { color: var(--haiku-shadow); }
+.haiku-menu-item[aria-disabled="true"] img { opacity: .4; }
+.haiku-menu-sep { height: 0; margin: 3px 0; border-top: 1px solid var(--haiku-shadow); border-bottom: 1px solid var(--haiku-shine); }
+.haiku-menu-noicon { display: inline-block; width: 16px; }
+.haiku-menu-item .haiku-icon-stack { width: 16px; height: 16px; }
+.haiku-menu-item .haiku-icon-stack > img { width: 16px; height: 16px; }
+.haiku-menu-item .haiku-icon-stack > img.haiku-icon-badge { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; }
+
+/* -- Save / Edit Query: a small Haiku window (yellow tab, grey panel). */
+body > .haiku-dialog-backdrop {
+  position: fixed; inset: 0; z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .08);
+}
+.haiku-dialog { font: 12px var(--haiku-font); color: #000; filter: drop-shadow(3px 3px 4px rgba(0, 0, 0, .35)); }
+.haiku-dialog-tab {
+  display: inline-block; padding: 3px 12px 3px 10px;
+  background: linear-gradient(var(--haiku-tab-top), var(--haiku-tab));
+  border: 1px solid var(--haiku-frame); border-bottom: 0;
+  font-weight: bold;
+}
+.haiku-dialog-body {
+  min-width: 500px; padding: 12px 14px 10px;
+  background: var(--haiku-panel); border: 1px solid var(--haiku-frame);
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), inset -1px -1px 0 var(--haiku-shadow);
+}
+.haiku-dialog-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.haiku-dialog-label { width: 56px; flex: none; text-align: right; }
+.haiku-dialog-input {
+  flex: 1; height: 22px; box-sizing: border-box; padding: 0 5px;
+  font: 12px var(--haiku-font); color: #000; background: #fff;
+  border: 1px solid var(--haiku-frame); border-radius: 0;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow); outline: none;
+}
+.haiku-dialog-input:focus { border-color: var(--haiku-focus); box-shadow: inset 0 0 0 1px var(--haiku-focus); }
+.haiku-dialog-pickrow { align-items: flex-start; }
+.haiku-dialog-pickrow > .haiku-dialog-label { padding-top: 5px; }
+.haiku-dialog-picks { display: flex; flex-wrap: wrap; gap: 2px; max-width: 420px; }
+.haiku-dialog-pick {
+  width: 26px; height: 26px; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent; border-radius: 3px; cursor: default; outline: none;
+}
+.haiku-dialog-pick img { width: 20px; height: 20px; pointer-events: none; }
+.haiku-dialog-pick:hover { background: var(--haiku-button-bg); border-color: var(--haiku-frame); }
+.haiku-dialog-pick[aria-checked="true"] {
+  background: var(--haiku-button-bg-down); border-color: var(--haiku-frame);
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow);
+}
+.haiku-dialog-pick:focus-visible { outline: 1px solid var(--haiku-focus); }
+.haiku-dialog-none { font-weight: bold; color: var(--haiku-text-dim); }
+.haiku-dialog-preview { display: flex; }
+.haiku-dialog-preview .haiku-tool { pointer-events: none; }
+.haiku-dialog-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.haiku-dialog-button {
+  min-width: 76px; height: 24px; padding: 0 12px;
+  font: 12px var(--haiku-font); color: #000;
+  background: var(--haiku-button-bg); border: 1px solid var(--haiku-frame); border-radius: 3px;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine); cursor: default;
+}
+.haiku-dialog-button:hover:not(:disabled) { background: var(--haiku-button-bg-hover); }
+.haiku-dialog-button:active:not(:disabled) { background: var(--haiku-button-bg-down); box-shadow: inset 1px 1px 0 var(--haiku-shadow); }
+.haiku-dialog-button:disabled { color: var(--haiku-shadow); }
+.haiku-dialog-button:focus-visible { outline: 1px solid var(--haiku-focus); outline-offset: 1px; }
+/* The default button (Enter): BeOS draws it with a heavier frame. */
+.haiku-dialog-default { box-shadow: inset 1px 1px 0 var(--haiku-shine), 0 0 0 2px var(--haiku-panel-dark); font-weight: bold; }
 
 /* -- Category tabs (Primary / Promotions / ...): a Haiku BTabView. The
  * front tab is the light panel that runs into the column header below;
@@ -1135,10 +1320,23 @@ tr.zA .T-KT.T-KT-Jp {
   opacity: 1;
 }
 tr.zA .T-KT:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"])::before, tr.zA .T-KT:not([aria-label*="-bang"]):not([aria-label*="-check"]):not([aria-label*="-info"]):not([aria-label*="-question"]):not([aria-label*="-guillemet"]) > * { display: none !important; }
-/* Attachment chips in rows become a small file icon. */
+/* The "has attachments" mark next to an open message's date: the same
+ * paperclip as in the list rows. */
+.gK img.gW, img.gW[alt="Attachments"] {
+  content: url("chrome-extension://__MSG_@@extension_id__/icons/paperclip.svg") !important;
+  background: none !important;
+  width: 16px !important; height: 16px !important;
+}
+/* Compose's Attach files button: the same paperclip. */
+[data-tooltip^="Attach files"] .a1.aaA, [aria-label^="Attach files"] .a1.aaA {
+  background: center / 20px 20px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/paperclip.svg") !important;
+  filter: none !important; opacity: 1 !important;
+}
+/* Attachment chips in rows become a small paperclip (the Attachments query uses it too). */
 tr.zA .brd, tr.zA .bqY, tr.zA .aKS { display: none !important; }
 tr.zA .yf.xY img, tr.zA .aZo {
-  content: url("chrome-extension://__MSG_@@extension_id__/icons/attachment.svg") !important;
+  content: url("chrome-extension://__MSG_@@extension_id__/icons/paperclip.svg") !important;
+  background: none !important; /* Gmail's own glyph sits behind it */
   width: 14px !important;
   height: 14px !important;
 }
@@ -1531,6 +1729,13 @@ html body .DC5CAd button:not(#haiku-x), .DC5CAd .FOBRw-I, .DC5CAd .FOBRw-I.FOBRw
   border-radius: 3px !important; box-shadow: inset 1px 1px 0 var(--haiku-shine) !important;
   font-weight: normal !important; color: #000 !important;
 }
+/* Its "+ archive" picture: Gmail's sprite doesn't survive the resets, which
+ * left an empty box. Haiku's archive icon instead. */
+.btC .T-I.Uo img.aPa {
+  width: 18px !important; height: 18px !important; margin: 0 0 0 3px !important;
+  vertical-align: -4px !important; border: 0 !important; box-shadow: none !important;
+  background: center / 18px 18px no-repeat url("chrome-extension://__MSG_@@extension_id__/icons/archive.svg") !important;
+}
 
 /* -- Settings: a Haiku preferences window --------------------------------- */
 /* No Themes tab: this extension is the theme. */
@@ -1797,6 +2002,11 @@ html body .DC5CAd:has(> .mNKakd) > .DjVd6c:last-child { margin-left: auto !impor
 html body [role="main"] .G-atb .G6 { margin: 3px 0 0 !important; height: auto !important; }
 html body [role="main"] .G-atb .G6 .Ii { margin: 0 !important; height: auto !important; }
 html body [role="main"] .G-atb .G6 .a5C { margin: 0 !important; padding: 0 !important; }
+/* Search results put the same filter chips beside the Mail / Conversations
+ * switch, in an 18px box they overflowed onto the bar below. */
+html body .biW .G6 { height: auto !important; align-self: center !important; }
+html body .biW .G6 .Ii { margin: 0 !important; height: auto !important; }
+html body .biW .G6 .a5C { margin: 0 !important; padding: 0 !important; }
 html body [role="main"] .G-atb .G6 .a5D { height: 22px !important; }
 html body [role="main"] .G-atb .G6 :is(a, [role="link"]) { color: var(--haiku-accent) !important; }
 /* Folder notices ("Messages in Spam... will be deleted"): one dim line. */
@@ -2119,3 +2329,21 @@ html.haiku-from-sized [role="main"] tr.zA > td.yX {
   flex: 0 0 var(--haiku-from-w) !important;
   width: var(--haiku-from-w) !important; max-width: var(--haiku-from-w) !important;
 }
+
+/* Gmail's footers (under the list, and in an empty reading pane): their
+ * storage and account-activity text moves to the status bar (haiku.js),
+ * with a Details link that presses Gmail's. "Program Policies" and
+ * "Powered by Google" go. */
+html body :is(.l2.pfiaof, .apO) { display: none !important; }
+.haiku-statusbar .haiku-status-activity { flex: none; margin-left: auto; white-space: nowrap; color: var(--haiku-text-dim); }
+.haiku-statusbar .haiku-status-details {
+  pointer-events: auto; cursor: pointer;
+  color: var(--haiku-accent) !important; text-decoration: underline !important;
+}
+.haiku-statusbar .haiku-status-details:hover { color: #1f3f63 !important; }
+
+/* "Choose which apps to use in Gmail" (Quick settings → Apps in Gmail):
+ * the illustration is a fixed 480px, wider than the dialog's content with
+ * Haiku's padding, which added a horizontal scrollbar. Let it fit. */
+html body .uW2Fw-bHk .a0K { width: auto !important; max-width: 100% !important; }
+html body .uW2Fw-bHk .a0K :is(img, svg, div) { max-width: 100% !important; }
