@@ -67,7 +67,7 @@
   const QUERY_BADGES = [
     ["heart", "Loved ones"], ["people", "People"], ["paperclip", "Attachments"], ["briefcase", "Work"],
     ["clock", "Time-sensitive"], ["stopwatch", "Snoozed or waiting"], ["todo", "To-do"],
-    ["recipes", "Recipes"], ["box", "Orders and deliveries"], ["document", "Documents and notes"], ["megaphone", "Newsletters and announcements"],
+    ["home", "Home"], ["recipes", "Recipes"], ["box", "Orders and deliveries"], ["document", "Documents and notes"], ["megaphone", "Newsletters and announcements"],
     ["picture", "Photos"], ["rocket", "Projects"], ["chart", "Reports and statistics"], ["", "None"],
   ];
   // The built-in queries keep their own pictures even though the Save Query
@@ -1295,8 +1295,31 @@
   const fixTooltips = () => { for (const el of document.querySelectorAll("[ng-non-bindable]")) fixTip(el); };
 
   // ------------------------------------------------------------- driver
+  // Person or company? Gmail gives only a name and an address, so guess: a
+  // business word in the name (Inc, Team, Deals...), one-word names, and
+  // generic addresses (no-reply@, info@...) are companies; anything else is a
+  // person. haiku.css shows Haiku's person or a little robot in the
+  // picture slot of senders that have no picture of their own.
+  const COMPANY_WORD = /\b(inc|llc|ltd|corp|corporation|co|company|gmbh|plc|team|support|service|services|deals|news|newsletter|store|shop|bank|alerts?|notifications?|billing|sales|marketing|events?|careers|jobs|rewards|offers|promotions|customer|help|group|international|solutions|systems|technologies|institute|university|foundation|association|club|magazine|times|post|daily)\b/i;
+  const GENERIC_ADDR = /^(no-?reply|do-?not-?reply|info|support|hello|hi|sales|news|newsletter|billing|team|contact|admin|service|care|mail|email|notifications?|alerts?|updates?|marketing|orders?|accounts?|help|deals|offers|store|shop|press|jobs|careers)([+._-].*)?@/i;
+  const senderKind = (name, addr) => {
+    const n = (name || "").replace(/<.*>/, "").trim();
+    if (GENERIC_ADDR.test(addr || "") || COMPANY_WORD.test(n) || /[0-9!&@™®]/.test(n)) return "company";
+    if (!/\s/.test(n) && n.length) return "company";
+    return "person";
+  };
+  function tagSenders() {
+    for (const msg of document.querySelectorAll(".adn, .adf")) {
+      const from = msg.querySelector(".gE .gD[email], .gE .gD, h3.iw .gD");
+      if (!from) continue;
+      const kind = senderKind(from.getAttribute("name") || from.textContent, from.getAttribute("email") || "");
+      if (msg.dataset.haikuSender !== kind) msg.dataset.haikuSender = kind;
+    }
+  }
+
   function applyAll() {
     try {
+      tagSenders();
       ensureToolbar();
       measureHeader();
       ensureSplitter();

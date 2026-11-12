@@ -1397,7 +1397,7 @@ h2.hP {
 }
 .adn > .aju .aFg, .adf > .aju .aFg { display: none !important; }
 :is(.adn, .adf) > .aju :is(.aCi, .aCi > span) { display: block !important; width: 34px !important; height: 34px !important; margin: 0 !important; }
-:is(.adn, .adf) > .aju img.ajn {
+:is(.adn, .adf) > .aju .ajn {
   width: 32px !important; height: 32px !important; border-radius: 0 !important; display: block !important; margin: 0 !important;
   object-fit: cover !important; background: var(--haiku-document) !important;
   border: 1px solid var(--haiku-shadow-dark) !important;
@@ -1413,10 +1413,10 @@ h2.hP {
 /* Collapsed messages (name + preview line): the picture at the panel's
  * left edge, the text beside it. */
 .adf > .aju { left: 8px !important; top: 7px !important; }
-.adf:has(> .aju img.ajn) .gE.hI { padding-left: 50px !important; min-height: 48px !important; box-sizing: border-box !important; }
+.adf:has(> .aju .ajn) .gE.hI { padding-left: 50px !important; min-height: 48px !important; box-sizing: border-box !important; }
 .adf > .gs, .adn > .gs { margin-left: 0 !important; }
 /* With a picture beside the name. */
-.adn:has(> .aju img.ajn) .gE.iv.gt { padding-left: 106px !important; min-height: 50px !important; box-sizing: border-box !important; }
+.adn:has(> .aju .ajn) .gE.iv.gt { padding-left: 106px !important; min-height: 50px !important; box-sizing: border-box !important; }
 .gE.iv.gt::before {
   content: "From:\A To:"; white-space: pre; position: absolute; left: 0; top: 0; bottom: 0; width: 54px;
   padding: 5px 6px 0 0; box-sizing: border-box; text-align: right;
@@ -2453,3 +2453,85 @@ html body .G-atb .T-I.bulkboomerang + .G-Ni { border-left: 1px solid var(--haiku
  * width or extra margin, the same 4px padding either side of the logo + label. */
 html body .G-atb .T-I.bulkboomerang { width: auto !important; min-width: 0 !important; max-width: none !important; margin: 0 !important; padding: 0 8px !important; gap: 0 !important; }
 html body .G-atb .T-I.bulkboomerang + .G-Ni { margin-left: 0 !important; }
+
+/* Gmail's notices over a message, pulled ABOVE the From / To header like the
+ * other cards (Boomerang, calendar). Spam notice (.bzx): yellow "caution" card
+ * with a hazard-striped edge and Haiku's warning triangle. Anything else
+ * (.bzy "Be careful with this message", phishing, unauthenticated senders):
+ * red "danger" card with Haiku's stop sign. Gmail pulls the notice 48px left
+ * (margin-left:-48px, for its avatar gutter), which clipped it. */
+/* A one-column grid: notice (row 1), header (row 2), body (row 3). The sender's
+ * picture is a sibling of .gs, absolutely placed against the message's top, so
+ * it joins the grid too and shares the header's cell, level with it. */
+html body .adn:has(> .gs .bzp) { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; align-items: start !important; }
+html body .adn:has(> .gs .bzp) > .gs { display: contents !important; }
+html body .adn:has(> .gs .bzp) > .gs > .gE { grid-row: 2 !important; grid-column: 1 !important; }
+html body .adn:has(> .gs .bzp) > .gs > div:not(.gE):has(.bzp) { grid-row: 1 !important; grid-column: 1 !important; }
+html body .adn:has(> .gs .bzp) > .gs > div:not(.gE):not(:has(.bzp)) { grid-row: 3 !important; grid-column: 1 !important; min-width: 0 !important; }
+html body .adn:has(> .gs .bzp) > .aju { position: static !important; grid-row: 2 !important; grid-column: 1 !important; z-index: 1 !important; margin: 8px 0 0 62px !important; left: auto !important; top: auto !important; justify-self: start !important; }
+html body .bzp {
+  --note-edge: #ffcb00; --note-stripe: #000; --note-bg: #fff6c8; --note-line: #8a6d00; --note-ink: #000;
+  position: relative !important; margin: 6px 8px 6px !important; padding: 6px 10px 6px 44px !important; width: auto !important; box-sizing: border-box !important;
+  background: repeating-linear-gradient(-45deg, var(--note-stripe) 0 5px, var(--note-edge) 5px 10px) left top / 10px 100% no-repeat, var(--note-bg) !important;
+  border: 1px solid var(--note-line) !important; border-radius: 0 !important; box-shadow: inset 11px 1px 0 -10px var(--haiku-shine) !important;
+}
+html body .bzp:not(.bzx) { --note-edge: #fff; --note-stripe: #c4121f; --note-bg: #ffe0dc; --note-line: #8e0718; --note-ink: #5a0008; }
+html body .bzp::before {
+  content: ""; position: absolute; left: 16px; top: 7px; width: 24px; height: 24px;
+  background: url("chrome-extension://__MSG_@@extension_id__/icons/caution.svg") center / contain no-repeat;
+}
+html body .bzp:not(.bzx)::before { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/stop.svg"); }
+/* Haiku's yellow warning is a tall icon that outweighs the red one: draw it smaller. */
+html body .bzp.bzx::before { background-size: auto 22px !important; background-position: 1px 0 !important; }
+html body .bzp, html body .bzp :is(p, h2, span, div, a) { font-size: 12px !important; color: var(--note-ink) !important; }
+html body .bzp h2 { font-weight: bold !important; font-size: 13px !important; margin: 0 0 2px !important; }
+html body .bzp:not(.bzx) h2 { text-transform: uppercase !important; letter-spacing: .5px !important; }
+html body .bzp .a2l { margin-left: auto !important; }
+/* The square picture slot of a sender with no picture (spam, unknown): same
+ * 32px Haiku frame as a real picture, so it sits level in the header. */
+html body :is(.adn, .adf) > .aju .ajn:not(img) {
+  width: 32px !important; height: 32px !important; min-width: 0 !important; padding: 0 !important; margin: 0 !important; box-sizing: border-box !important;
+  border-radius: 0 !important; border: 1px solid var(--haiku-shadow-dark) !important; box-shadow: 1px 1px 0 var(--haiku-shine) !important;
+  background-color: var(--haiku-document) !important; display: block !important;
+}
+
+/* Open message: Gmail leaves 16px of padding on the right of the message area
+ * (and none on the left), so the From / To bar touched the left edge but not
+ * the right. Equal 8px on both sides now, like the cards above it. */
+html body .nH.a98.iY.aHo { padding-left: 3px !important; padding-right: 3px !important; }
+/* No sender picture: Haiku's single-person icon instead of an empty white square. */
+html body :is(.adn, .adf) > .aju .ajn:not(img) {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/person.svg") !important;
+  background-size: 28px 28px !important; background-position: center !important; background-repeat: no-repeat !important;
+}
+html body :is(.adn, .adf)[data-haiku-sender="company"] > .aju .ajn:not(img) {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/robot.svg") !important;
+}
+html body :is(.adn, .adf) > .aju .ajn:not(img) * { display: none !important; }
+
+/* The (i) on spam / warning notices: Haiku's information badge instead of
+ * Gmail's thin round Material icon, and its pop-over ("Security alerts in
+ * Gmail / Learn more") as a Haiku window: grey panel, 1px frame, yellow title. */
+html body .bzp .a2k {
+  background: url("chrome-extension://__MSG_@@extension_id__/icons/info.svg") center / 20px 20px no-repeat !important;
+  opacity: .9 !important;
+}
+html body .bzp .a2k > *, html body .bzp .a2k::before, html body .bzp .a2k::after { display: none !important; }
+html body .bzp .a2k:hover { opacity: 1 !important; }
+html body .a2m.a2r {
+  background: var(--haiku-panel) !important; border: 1px solid var(--haiku-frame) !important; border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shine), 2px 2px 0 rgba(0,0,0,.25) !important; padding: 0 !important; font-family: var(--haiku-font) !important;
+}
+html body .a2m.a2r .a2E {
+  background: var(--haiku-tab) !important; color: var(--haiku-text) !important; font-size: 12px !important; font-weight: bold !important;
+  border-bottom: 1px solid var(--haiku-frame) !important; padding: 3px 8px !important; margin: 0 !important;
+}
+html body .a2m.a2r .a2n { padding: 8px 10px !important; font-size: 12px !important; color: var(--haiku-text) !important; }
+html body .a2m.a2r .a2o { color: var(--haiku-focus) !important; text-decoration: underline !important; font-size: 12px !important; }
+html body .a2m.a2r .a2s { padding: 0 10px 8px !important; background: var(--haiku-panel) !important; }
+html body .a2m.a2r .a2s img { max-width: 100% !important; height: auto !important; }
+
+/* Reply / Forward row: width:100% plus 16px of padding made it 16px wider than
+ * the message area, which added a horizontal scrollbar and a white strip over
+ * the vertical one at narrower window widths. */
+html body .amr { box-sizing: border-box !important; max-width: 100% !important; }

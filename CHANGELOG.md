@@ -3,6 +3,25 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.2.2 (12 November 2026)
+
+Spam and warning notices, sender pictures, and a few fixes.
+
+- **Spam and warning notices** now sit above the From / To bar, as cards like
+  the others. The "Why is this message in spam?" notice is a yellow caution
+  card with a hazard-striped edge; "Be careful with this message" (and other
+  warnings) are red danger cards with Haiku's alert icons. Their (i) is
+  Haiku's information badge, and its pop-over is a Haiku window.
+- **Senders with no picture** get Haiku's person icon, or the Automator
+  robot for companies and automated senders (guessed from the name and
+  address), instead of an empty white square, aligned with the name.
+- The From / To bar has equal space left and right of it.
+- Save Query pictures: new **Home**, a Birthday Cake for **Recipes**,
+  Mandelbrot for **Photos** and Haiku's to-do note for **To-do**.
+- Fixed: the Reply / Forward row was 16px too wide, which added a horizontal
+  scrollbar and a white strip over the vertical one at narrower widths.
+- Fixed: the spam notice was clipped 48px off the left edge.
+
 ## 1.2.1 (11 November 2026)
 
 Works with Boomerang for Gmail, and a few Save Query picture changes.

@@ -31,14 +31,18 @@ magnifying glass from Tracker's query-folder icon over it. `icons/drive.svg`
 is Tracker's network-share icon.
 
 `icons/paperclip.svg` (attachments), `icons/plus.svg` (Save Query),
-`icons/todo.svg`, `icons/stopwatch.svg`, `icons/recipes.svg`, `icons/heart.svg`,
-`icons/briefcase.svg` and `icons/picture.svg` (query pictures; the last is a framed miniature after Van Gogh's public-domain
-*Self-Portrait with Bandaged Ear*, 1889) and `icons/delete-forever.svg` (the
+`icons/stopwatch.svg`, `icons/heart.svg`,
+`icons/briefcase.svg` (query pictures) and `icons/delete-forever.svg` (the
 badge on Trash in Spam and Trash) were drawn for this theme in Haiku's icon
 style. `icons/check-mail.svg` is Mail's
 envelope with a refresh arrow drawn for this theme in the green of Haiku's
 arrows. `icons/clock.svg` is the Clock app's icon with a red exclamation
 mark added (Time-sensitive).
+
+`icons/todo.svg` (Task), `icons/person.svg`, `icons/robot.svg` (Automator), `icons/picture.svg` (Mandelbrot),
+`icons/recipes.svg` (Birthday Cake), `icons/home.svg`, `icons/caution.svg`, `icons/stop.svg` and
+`icons/info.svg` are Haiku's own icons (github.com/darealshinji/haiku-icons, MIT; the
+last three also in the GNOME-look conversion).
 
 Gmail is a trademark of Google LLC. This extension only restyles Gmail locally,
 in this browser.
