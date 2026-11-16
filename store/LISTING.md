@@ -63,6 +63,7 @@ folder use sample data (no real mail).
 | `screenshot-3-queries.png` | Screenshot 3 (a query's results and its right-click menu) |
 | `screenshot-4-query-dialog.png` | Screenshot 4 (the Edit Query dialog) |
 | `screenshot-5-compose.png` | Screenshot 5 |
+| `screenshot-6-deskbar.png` | Screenshot 6 (the Deskbar, sample data) |
 | `promo-440x280.png` | Small promo tile (440×280) |
 | `marquee-1400x560.png` | Marquee promo tile (1400×560, optional) |
 
