@@ -114,6 +114,8 @@ def serve():
         if "nav" in cmd:
             driver.get(cmd["nav"])
             return {"url": driver.current_url}
+        if "cdp" in cmd:
+            return {"value": driver.execute_cdp_cmd(cmd["cdp"], cmd.get("params", {}))}
         if "js" in cmd:
             return {"value": driver.execute_script(cmd["js"])}
         if "click" in cmd or "hover" in cmd:

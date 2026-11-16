@@ -3,6 +3,36 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.3.0 (16 November 2026)
+
+The Deskbar, and Gmail as a window of its own.
+
+- **A Deskbar on the right**, like Haiku's: your account at the top, a tray
+  with the Mail icon, an unread count and the clock, then Gmail, Drive,
+  Calendar, Keep, Tasks, Contacts, Google apps, Settings and Help with Haiku's
+  icons, and a mini calendar at the bottom. Calendar, Keep, Tasks and Contacts
+  open in small windows. A **Hide Deskbar / Show Deskbar** button next to the
+  search box puts it away, and Gmail's own side panel strip is gone with it.
+- **Unread count you can choose.** Right-click the count: *Unread in the
+  Primary tab*, *in the whole inbox* (all tabs) or *in the entire mailbox*.
+  Click it to open exactly that list.
+- **Made for running as an app.** On Haiku (detected automatically) the Deskbar
+  becomes a narrow **app-window sidebar**: Mail count on top, the Google apps
+  down the side, the calendar at the bottom, since Haiku's own Deskbar already
+  has the clock and your programs. Right-click the hide button to pick either
+  style on any system.
+- **New guide: run Gmail as an application window**, with no tabs or address
+  bar: install it as an app in Chrome, Edge, Brave or Vivaldi, or use a
+  dedicated profile with hidden toolbars in Firefox (including Firefox on
+  Haiku, started from the Shortcuts preferences). See
+  [docs/haiku-app-window.md](docs/haiku-app-window.md).
+- Hiding the Deskbar leaves no blue strip; the status bar stops at the
+  Deskbar so "Details" is never cut off.
+- Fixed: Gmail laid itself out to the full window width, so content ran under
+  the Deskbar.
+- New Haiku icons for the Deskbar (Mail, Clock, People, Launchbox, Appearance,
+  About, Deskbar).
+
 ## 1.2.2 (12 November 2026)
 
 Spam and warning notices, sender pictures, and a few fixes.

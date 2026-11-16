@@ -583,7 +583,7 @@ header[role="banner"] [aria-label^="Status:"],
 [role="navigation"][aria-label*="Chat" i],
 [role="navigation"][aria-label*="Meet" i],
 [role="navigation"].aeN,
-[role="complementary"], .bAw, .brC-brG,
+.brC-brG,
 [aria-label="Share in chat"], [data-tooltip="Share in chat"],
 .ams:has([aria-label="Share in chat"]),
 [aria-label="Add reaction"], [data-tooltip="Add reaction"],
@@ -901,7 +901,8 @@ header[role="banner"] [aria-label="Main menu"]::after {
 .TO[data-tooltip="Scheduled"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/scheduled.svg") !important; }
 .TO[data-tooltip="All Mail"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/allmail.svg") !important; }
 .TO[data-tooltip="Spam"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/spam.svg") !important; }
-.TO[data-tooltip="Trash"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/trash-folder.svg") !important; }
+.TO[data-tooltip="Trash"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/trash-full.svg") !important; }
+html[data-haiku-trash="empty"] .TO[data-tooltip="Trash"] .qj { background-image: url("chrome-extension://__MSG_@@extension_id__/icons/trash-empty.svg") !important; }
 
 /* -- Message pane: one framed window under the yellow tab --------------- */
 [role="main"] {
@@ -2535,3 +2536,121 @@ html body .a2m.a2r .a2s img { max-width: 100% !important; height: auto !importan
  * the message area, which added a horizontal scrollbar and a white strip over
  * the vertical one at narrower window widths. */
 html body .amr { box-sizing: border-box !important; max-width: 100% !important; }
+
+
+
+/* ======================= Deskbar (right edge) ======================= */
+html:not(.haiku-popup), html:not(.haiku-popup) body { max-width: calc(100vw - 150px) !important; }
+html:not(.haiku-popup) { background: #336698; overflow-x: hidden; }
+#haiku-deskbar { position: fixed; z-index: 2147483000; top: 6px; right: 6px; width: 138px; box-sizing: border-box; background: var(--haiku-panel); border: 1px solid #1e1e1e;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--haiku-shadow), 3px 3px 0 rgba(0,0,0,.45); font: 12px var(--haiku-font); color: #000; user-select: none; }
+#haiku-deskbar .hd-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; height: 40px; padding: 4px 6px; background: linear-gradient(#f4f4f4, #d0d0d0); border-bottom: 1px solid var(--haiku-shadow); }
+#haiku-deskbar .hd-top img:first-child { max-width: 70px; max-height: 26px; object-fit: contain; background: #fff; border: 1px solid var(--haiku-shadow); }
+#haiku-deskbar .hd-top img:last-child { width: 26px; height: 26px; border: 1px solid #1e1e1e; object-fit: cover; flex: none; }
+#haiku-deskbar .hd-tray { display: flex; align-items: center; justify-content: flex-end; height: 20px; padding: 0 6px; background: #5a5a5a; border-bottom: 1px solid #1e1e1e; color: #fff; }
+#haiku-deskbar .hd-clock { color: #fff; }
+#haiku-deskbar .hd-item { display: flex; align-items: center; gap: 8px; height: 24px; padding: 0 8px; border-bottom: 1px solid #c4c4c4; cursor: default; background: linear-gradient(#e6e6e6, #d4d4d4); }
+#haiku-deskbar .hd-item[hidden] { display: none; }
+#haiku-deskbar .hd-item img { width: 18px; height: 18px; flex: none; }
+#haiku-deskbar .hd-item:hover { background: linear-gradient(#f6f6f6, #e2e2e2); }
+#haiku-deskbar .hd-item:active { background: var(--haiku-button-bg-down); }
+#haiku-deskbar .hd-run { background: linear-gradient(#c4c4c4, #d4d4d4); font-weight: bold; }
+#haiku-deskbar .hd-sep { height: 4px; border-top: 1px solid var(--haiku-shadow); border-bottom: 1px solid #fff; }
+/* Gmail's own account picture and its gear are in the Deskbar now (kept in the page, so the Deskbar can press them). */
+html:not(.haiku-popup) header a[aria-label^="Google Account"], html:not(.haiku-popup) header [aria-label="Settings"][role=button] { opacity: 0 !important; pointer-events: none !important; position: absolute !important; }
+
+/* The right-hand add-on rail stays in the page (Deskbar entries press it) but is invisible and takes no room. */
+html:not(.haiku-popup) .bAw { position: fixed !important; right: 0; top: 60px; width: 56px !important; height: 500px !important; opacity: 0 !important; pointer-events: none !important; z-index: -1 !important; }
+
+#haiku-deskbar .hd-cal { margin: 5px; padding: 3px; background: #fff; border: 1px solid #6c6c6c; border-color: #6c6c6c #fff #fff #6c6c6c; box-shadow: inset 1px 1px 0 var(--haiku-shadow); cursor: default; }
+#haiku-deskbar .hc-title { text-align: center; font: bold 11px var(--haiku-font); padding-bottom: 2px; }
+#haiku-deskbar .hc-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font: 10px/15px var(--haiku-font); }
+#haiku-deskbar .hc-grid b { color: #6c6c6c; font-weight: normal; }
+#haiku-deskbar .hc-grid .hc-today { background: #336698; color: #fff; font-weight: bold; }
+html.haiku-deskbar-off #haiku-deskbar { display: none; }
+html.haiku-deskbar-off html.haiku-deskbar-off:not(.haiku-popup), html.haiku-deskbar-off:not(.haiku-popup) body { max-width: none !important; }
+
+/* All the room under (and around) the Deskbar is BeOS desktop blue. */
+html:not(.haiku-popup:not(.x))::before { content: ""; position: fixed; top: 0; right: 0; bottom: 0; width: 150px; background: #336698; z-index: -1; pointer-events: none; }
+html.haiku-deskbar-off:not(.haiku-popup)::before { display: none; }
+html:not(.haiku-popup) { background: #336698 !important; }
+#haiku-deskbar .hd-tray { justify-content: space-between; gap: 6px; }
+#haiku-deskbar .hd-store { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 10px var(--haiku-font); color: #d8e8f8; }
+/* The Deskbar button beside the search field (a mirrored Sidebar icon). */
+#haiku-deskbar-btn { position: fixed; top: 0; z-index: 6; height: 40px; }
+#haiku-deskbar-btn img { transform: scaleX(-1); }
+html.haiku-deskbar-off #haiku-deskbar-btn { /* stays so the Deskbar can be brought back */ }
+/* Gmail's full-width background layer (.wl, rgb 248,250,253) is the white that showed beside and under the Deskbar. */
+html:not(.haiku-popup) div.wl { background: transparent !important; }
+html:not(.haiku-popup) { --haiku-deskbar-reserve: 164px; }
+html:not(.haiku-popup), html:not(.haiku-popup) body { max-width: calc(100vw - 164px) !important; }
+html.haiku-deskbar-off:not(.haiku-popup), html.haiku-deskbar-off:not(.haiku-popup) body { max-width: none !important; }
+html:not(.haiku-popup)::before { width: 164px !important; }
+#haiku-deskbar-btn { z-index: 2147483000 !important; background: transparent !important; }
+
+html:not(.haiku-popup), html:not(.haiku-popup) body { max-width: calc(100vw - 150px) !important; }
+html.haiku-deskbar-off:not(.haiku-popup), html.haiku-deskbar-off:not(.haiku-popup) body { max-width: none !important; }
+html:not(.haiku-popup)::before { width: 150px !important; }
+#haiku-deskbar-btn img { transform: none !important; }
+#haiku-deskbar { right: 2px !important; }
+html.haiku-deskbar-off:not(.haiku-popup), html.haiku-deskbar-off:not(.haiku-popup) body { max-width: calc(100vw - 44px) !important; }
+html.haiku-deskbar-off:not(.haiku-popup)::before { display: block !important; width: 44px !important; }
+
+/* Room for the Deskbar button (icon over "Hide Deskbar" / "Show Deskbar") between the search field and the Deskbar. */
+#haiku-deskbar-btn { min-width: 0 !important; width: auto !important; padding: 1px 3px !important; white-space: nowrap; }
+#haiku-deskbar-btn img { width: 22px; height: 22px; }
+#haiku-deskbar-btn { padding-top: 0 !important; justify-content: center; }
+html:not(.haiku-popup):not(.haiku-deskbar-off) header div:has(> form[role=search]) { position: relative !important; right: 48px !important; }
+html.haiku-deskbar-off:not(.haiku-popup), html.haiku-deskbar-off:not(.haiku-popup) body { max-width: calc(100vw - 72px) !important; }
+html.haiku-deskbar-off:not(.haiku-popup)::before { width: 72px !important; }
+
+#haiku-deskbar-sep { position: fixed; z-index: 2147483000; margin: 5px 0 !important; box-sizing: border-box; }
+#haiku-deskbar-sep { height: 32px !important; }
+
+/* Google's own Help (?) button in the header: the Deskbar's Help entry replaces it. */
+html:not(.haiku-popup) header [aria-label="Support"], html:not(.haiku-popup) header [aria-label="Help"][role=button] { opacity: 0 !important; pointer-events: none !important; position: absolute !important; }
+
+#haiku-deskbar .hd-mail { display: inline-flex; align-items: center; gap: 4px; flex: 1 1 auto; cursor: default; color: #fff; }
+#haiku-deskbar .hd-mail img { width: 16px; height: 16px; }
+#haiku-deskbar .hd-count { font: bold 11px var(--haiku-font); color: #fff; }
+
+#haiku-unread-menu { position: fixed; z-index: 2147483001; min-width: 190px; padding: 2px 0; background: var(--haiku-panel); border: 1px solid #1e1e1e; box-shadow: inset 1px 1px 0 #fff, 2px 2px 0 rgba(0,0,0,.35); font: 12px var(--haiku-font); color: #000; }
+#haiku-unread-menu .hu-item { height: 24px; line-height: 24px; padding: 0 12px 0 24px; position: relative; cursor: default; white-space: nowrap; }
+#haiku-unread-menu .hu-item:hover { background: var(--haiku-menu-selected); }
+#haiku-unread-menu .hu-on::before { content: "\2713"; position: absolute; left: 8px; }
+
+/* ============ App-window sidebar (Haiku, or chosen): mail count on top, apps down the side, calendar at the bottom ============ */
+#haiku-deskbar .hd-compact-only { display: none; }
+html.haiku-compact #haiku-deskbar { top: 0 !important; right: 0 !important; bottom: 0; width: 148px; display: flex; flex-direction: column; border-width: 0 0 0 1px; box-shadow: inset 1px 0 0 #fff; }
+html.haiku-compact #haiku-deskbar .hd-top, html.haiku-compact #haiku-deskbar .hd-clock { display: none; }
+html.haiku-compact #haiku-deskbar .hd-tray { order: 0; height: 40px; padding: 0 10px; justify-content: flex-start; background: linear-gradient(#f4f4f4, #d0d0d0); border-bottom: 1px solid var(--haiku-shadow); }
+html.haiku-compact #haiku-deskbar .hd-mail { color: #000; gap: 8px; }
+html.haiku-compact #haiku-deskbar .hd-mail img { width: 28px; height: 28px; }
+html.haiku-compact #haiku-deskbar .hd-count { font: bold 18px var(--haiku-font); color: #000; }
+html.haiku-compact #haiku-deskbar .hd-list { order: 1; }
+html.haiku-compact #haiku-deskbar .hd-compact-only { display: flex; }
+html.haiku-compact #haiku-deskbar .hd-cal { order: 2; margin-top: auto; }
+html.haiku-compact #haiku-deskbar .hd-run { background: linear-gradient(#e6e6e6, #d4d4d4); font-weight: normal; }
+html.haiku-compact:not(.haiku-popup), html.haiku-compact:not(.haiku-popup) body { max-width: calc(100vw - 148px) !important; }
+html.haiku-compact:not(.haiku-popup)::before { width: 148px !important; background: var(--haiku-panel); }
+html.haiku-compact.haiku-deskbar-off:not(.haiku-popup), html.haiku-compact.haiku-deskbar-off:not(.haiku-popup) body { max-width: calc(100vw - 72px) !important; }
+
+/* Gmail sizes its root layout to the window in inline px; keep it inside the area the sidebar leaves. */
+html:not(.haiku-popup) body > div > div.nH[style*="width"] { width: 100% !important; max-width: 100% !important; }
+html.haiku-compact.haiku-deskbar-off #haiku-deskbar { display: none !important; }
+html.haiku-compact #haiku-deskbar .hd-tray { height: 47px; box-sizing: border-box; }
+html.haiku-compact.haiku-deskbar-off:not(.haiku-popup), html.haiku-compact.haiku-deskbar-off:not(.haiku-popup) body { max-width: none !important; }
+html.haiku-compact.haiku-deskbar-off:not(.haiku-popup)::before { display: none !important; }
+html.haiku-compact.haiku-deskbar-off:not(.haiku-popup) { background: var(--haiku-panel) !important; }
+html.haiku-compact.haiku-deskbar-off:not(.haiku-popup) header div:has(> form[role=search]) { position: relative !important; right: 72px !important; }
+/* Deskbar hidden (either style): no blue strip, content to the edge, search clear of the Show button */
+html.haiku-deskbar-off:not(.haiku-popup), html.haiku-deskbar-off:not(.haiku-popup) body { max-width: none !important; }
+html.haiku-deskbar-off:not(.haiku-popup)::before { display: none !important; }
+html.haiku-deskbar-off:not(.haiku-popup) { background: var(--haiku-panel) !important; }
+html.haiku-deskbar-off:not(.haiku-popup) header div:has(> form[role=search]) { position: relative !important; right: 72px !important; }
+/* Status bar: when the sidebar leaves little room, the account-activity text shortens with an ellipsis instead of pushing "Details" out of view */
+.haiku-statusbar .haiku-status-activity { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.haiku-statusbar .haiku-status-details { flex: none; }
+.haiku-statusbar { min-width: 0; overflow: hidden; }
+html:not(.haiku-popup):not(.haiku-deskbar-off) .haiku-statusbar { right: 150px; }
+html.haiku-compact:not(.haiku-popup):not(.haiku-deskbar-off) .haiku-statusbar { right: 148px; }

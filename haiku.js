@@ -399,6 +399,11 @@
           btn.firstElementChild.replaceWith(makeIcon(tool.icon, v && v.badge));
         }
       }
+      if (tool.id === "trash" && !btn.dataset.variant) {
+        const img = btn.querySelector(":scope > img");
+        const want = icon(trashIcon());
+        if (img && img.src !== want) img.src = want;
+      }
       if (tool.isQuery) {
         const on = !!active && active.id === tool.id;
         const pressed = on ? "true" : "false";
@@ -1295,6 +1300,49 @@
   const fixTooltips = () => { for (const el of document.querySelectorAll("[ng-non-bindable]")) fixTip(el); };
 
   // ------------------------------------------------------------- driver
+  // Trash picture: Haiku's full bin whenever the Trash has anything in it, the
+  // empty one only when it's empty. Gmail doesn't say, so: the Trash window
+  // is read when it's open (exact), deleting anything sets it full, and a
+  // light check of Gmail's basic HTML Trash runs now and then. The answer
+  // is kept in localStorage; until it's known the bin shows full.
+  const TRASH_KEY = "haiku-trash";
+  const trashIcon = () => (document.documentElement.dataset.haikuTrash === "empty" ? "trash-empty" : "trash-full");
+  function setTrash(full) {
+    const v = full ? "full" : "empty";
+    if (document.documentElement.dataset.haikuTrash === v) return;
+    document.documentElement.dataset.haikuTrash = v;
+    try { localStorage.setItem(TRASH_KEY, v); } catch (e) { /* private mode */ }
+  }
+  try { document.documentElement.dataset.haikuTrash = localStorage.getItem(TRASH_KEY) === "empty" ? "empty" : "full"; } catch (e) { document.documentElement.dataset.haikuTrash = "full"; }
+  function readTrashWindow() {
+    if (!/^#trash(\/|$)/.test(location.hash || "") || !/^Trash\b/i.test(document.title || "")) return;
+    // Any list rows on screen mean it has items; Gmail's own "No conversations
+    // in Trash." line means it is empty. (Gmail keeps several [role=main]
+    // elements, so look at the whole page.)
+    if ([...document.querySelectorAll("tr.zA")].some((r) => r.offsetParent)) setTrash(true);
+    else if (/no (conversations|messages) in (the )?trash/i.test(document.body.innerText || "")) setTrash(false);
+  }
+  async function probeTrash() {
+    try {
+      const res = await fetch(`${location.pathname.replace(/\/$/, "").split("/").slice(0, 4).join("/")}/h/?s=t`, { credentials: "same-origin" });
+      if (!res.ok) return;
+      const html = await res.text();
+      if (/href="\?&amp;th=|href="\?&th=/.test(html)) setTrash(true);
+      else if (/no (conversations|messages) in (the )?trash/i.test(html)) setTrash(false);
+    } catch (e) { /* offline or blocked: keep what we know */ }
+  }
+  setTimeout(probeTrash, 4000);
+  setInterval(() => { if (!/^#trash/.test(location.hash || "")) probeTrash(); }, 10 * 60 * 1000);
+  // Anything deleted from here (the Delete button, or Gmail's # shortcut) fills it.
+  window.addEventListener("click", (e) => {
+    if (/^#(trash|spam)/.test(location.hash || "")) return;
+    const b = e.target.closest && e.target.closest('[data-tool="trash"], [data-tooltip="Delete"], [aria-label="Delete"]');
+    if (b) setTrash(true);
+  }, true);
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "#" && !/^(INPUT|TEXTAREA)$/.test((e.target && e.target.tagName) || "") && !(e.target && e.target.isContentEditable) && !/^#(trash|spam)/.test(location.hash || "")) setTrash(true);
+  }, true);
+
   // Person or company? Gmail gives only a name and an address, so guess: a
   // business word in the name (Inc, Team, Deals...), one-word names, and
   // generic addresses (no-reply@, info@...) are companies; anything else is a
@@ -1317,8 +1365,217 @@
     }
   }
 
+  // ---------------------------------------------------------------- Deskbar
+  // Haiku's Deskbar at the right edge: account at the top, a tray (clock),
+  // then the apps. Entries press Gmail's own side-panel and header controls.
+  const dbAria = (label, role) => [...document.querySelectorAll(`${role || ""}[aria-label="${label}"], ${role || ""}[aria-label^="${label}"]`)].find((e) => !e.closest("#haiku-deskbar"));
+  // Calendar, Keep, Tasks and Contacts open as small separate windows (Gmail's own side panel can't be opened from outside).
+  const openApp = (url) => window.open(url, "_blank", "popup=yes,width=440,height=680");
+  const DESK = [
+    { label: "Gmail", icon: "App_Mail", run: () => { location.hash = "#inbox"; }, running: true },
+    { label: "Drive", icon: "File_GoogleFS", run: () => location.assign("https://drive.google.com/drive/home") },
+    { label: "Calendar", icon: "App_Clock", run: () => openApp("https://calendar.google.com/calendar/u/0/r") },
+    { label: "Keep", icon: "Misc_CF_LightBulb", run: () => openApp("https://keep.google.com/u/0/") },
+    { label: "Tasks", icon: "File_Task", run: () => openApp("https://tasks.google.com/tasks/") },
+    { label: "Contacts", icon: "App_People", run: () => openApp("https://contacts.google.com/u/0/") },
+    { sep: true },
+    { label: "Google apps", icon: "App_Launchbox", find: () => dbAria("Google apps") },
+    { label: "Account", icon: "App_People", compactOnly: true, find: () => dbAria("Google Account") },
+    { label: "Settings", icon: "Prefs_Appearance", find: () => dbAria("Settings", '[role="button"]') },
+    { label: "Help", icon: "App_About", find: () => dbAria("Support", '[role="button"]') },
+  ];
+  const DB_KEY = "haiku-deskbar";
+  function setDeskbar(on) {
+    document.documentElement.classList.toggle("haiku-deskbar-off", !on);
+    try { localStorage.setItem(DB_KEY, on ? "on" : "off"); } catch (e) { /* ignore */ }
+    window.dispatchEvent(new Event("resize"));
+  }
+  try { document.documentElement.classList.toggle("haiku-deskbar-off", localStorage.getItem(DB_KEY) === "off"); } catch (e) { /* ignore */ }
+  // A month grid under the Deskbar's list; today is marked.
+  function drawCal(cal) {
+    const now = new Date();
+    const key = now.getFullYear() + "-" + now.getMonth() + "-" + now.getDate();
+    if (cal.dataset.day === key) return;
+    cal.dataset.day = key;
+    cal.replaceChildren();
+    cal.append(make("div", "hc-title", now.toLocaleDateString([], { month: "long", year: "numeric" })));
+    const grid = make("div", "hc-grid");
+    for (const d of ["S", "M", "T", "W", "T", "F", "S"]) grid.append(make("b", null, d));
+    const first = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    for (let i = 0; i < first; i++) grid.append(make("i"));
+    for (let d = 1; d <= days; d++) grid.append(make("span", d === now.getDate() ? "hc-today" : null, String(d)));
+    cal.append(grid);
+  }
+  // The Deskbar's own button, right of the search field: the left Sidebar button, mirrored.
+  // Deskbar style: on Haiku itself (its own Deskbar already shows the clock, the other
+  // programs and the account) the extension shows a narrow "app window" sidebar instead:
+  // the mail count on top, the Google apps down the side, the mini calendar at the bottom.
+  // Anywhere else the full Deskbar shows. "Style" is an override: auto, full or compact.
+  const STYLE_KEY = "haiku-deskbar-style";
+  const onHaiku = /\bHaiku\b/i.test(navigator.userAgent || "") || /\bHaiku\b/i.test(navigator.platform || "");
+  const deskStyle = () => { try { const v = localStorage.getItem(STYLE_KEY); return v === "full" || v === "compact" ? v : "auto"; } catch (e) { return "auto"; } };
+  const isCompact = () => { const s = deskStyle(); return s === "compact" || (s === "auto" && onHaiku); };
+  function styleMenu(x, y) {
+    document.getElementById("haiku-unread-menu")?.remove();
+    const menu = make("div");
+    menu.id = "haiku-unread-menu";
+    const cur = deskStyle();
+    for (const [val, label] of [["auto", onHaiku ? "Automatic (compact on Haiku)" : "Automatic (full here)"], ["full", "Full Deskbar"], ["compact", "App-window sidebar"]]) {
+      const it = make("div", "hu-item" + (cur === val ? " hu-on" : ""), label);
+      it.addEventListener("click", () => { try { localStorage.setItem(STYLE_KEY, val); } catch (e) { /* ignore */ } menu.remove(); try { deskbar(); } catch (e2) { /* ignore */ } });
+      menu.append(it);
+    }
+    document.body.append(menu);
+    menu.style.left = Math.max(4, Math.min(x, innerWidth - menu.offsetWidth - 4)) + "px";
+    menu.style.top = (y + 4) + "px";
+    const off = (e) => { if (!menu.contains(e.target)) { menu.remove(); window.removeEventListener("mousedown", off, true); } };
+    setTimeout(() => window.addEventListener("mousedown", off, true), 0);
+  }
+  function deskbarButton() {
+    let b = document.getElementById("haiku-deskbar-btn");
+    if (!b) {
+      b = make("div", "haiku-tool");
+      b.id = "haiku-deskbar-btn";
+      b.setAttribute("role", "button");
+      const im = make("img");
+      im.src = icon("App_Deskbar");
+      b.append(im, make("span", null, "Deskbar"));
+      b.addEventListener("mousedown", (e) => e.preventDefault());
+      b.addEventListener("click", () => setDeskbar(document.documentElement.classList.contains("haiku-deskbar-off")));
+      b.addEventListener("contextmenu", (e) => { e.preventDefault(); styleMenu(e.clientX, e.clientY); });
+      document.body.append(b);
+    }
+    let sp = document.getElementById("haiku-deskbar-sep");
+    if (!sp) { sp = make("div", "haiku-toolbar-sep"); sp.id = "haiku-deskbar-sep"; document.body.append(sp); }
+    const form = document.querySelector('header form[role="search"]');
+    if (!form) return;
+    const r = form.getBoundingClientRect();
+    if (!r.width) return;
+    const left = Math.round(Math.min(r.right + 6, innerWidth - 70)) + "px";
+    // Same row as the left-hand toolbar buttons.
+    const ref = document.querySelector(".haiku-toolbar .haiku-tool");
+    if (ref) { const rr = ref.getBoundingClientRect(); const t = Math.round(rr.top) + "px", h = Math.round(rr.height) + "px"; if (b.style.top !== t) b.style.top = t; if (b.style.height !== h) b.style.height = h; if (sp.style.top !== t) sp.style.top = t; if (sp.style.height !== h) sp.style.height = h; }
+    if (b.style.left !== left) b.style.left = left;
+    { const sl = (Math.round(Math.min(r.right + 6, innerWidth - 70)) - 3) + "px"; if (sp.style.left !== sl) sp.style.left = sl; }
+    const off = document.documentElement.classList.contains("haiku-deskbar-off");
+    const noun = isCompact() ? "Sidebar" : "Deskbar";
+    b.title = (off ? "Show the " : "Hide the ") + noun + " (right-click to change style)";
+    const lab = b.querySelector("span");
+    const txt = (off ? "Show " : "Hide ") + noun;
+    if (lab && lab.textContent !== txt) lab.textContent = txt;
+    if (b.dataset.off !== String(off) + noun) b.dataset.off = String(off) + noun;
+  }
+  // Unread count shown in the Deskbar's tray: the Primary tab (what Gmail puts in the
+  // window title) or the whole inbox (Primary plus the "N new" on the other tabs).
+  const UNREAD_KEY = "haiku-unread-mode";
+  const UNREAD_MODES = [
+    ["primary", "Unread in the Primary tab", "is:unread category:primary in:inbox"],
+    ["inbox", "Unread in the whole inbox", "is:unread in:inbox"],
+    ["all", "Unread in the entire mailbox", "is:unread"],
+  ];
+  const unreadMode = () => { try { const v = localStorage.getItem(UNREAD_KEY); return UNREAD_MODES.some((m) => m[0] === v) ? v : "primary"; } catch (e) { return "primary"; } };
+  // Counts come from Gmail's own atom feeds (same origin, fetched about once a minute):
+  // ^i is the Inbox (all its tabs), ^u every unread message. Primary is the window title.
+  let feedCounts = { inbox: null, all: null }, feedAt = 0;
+  async function feedCount(label) {
+    const r = await fetch(`${location.pathname.replace(/\/$/, "").split("/").slice(0, 4).join("/")}/feed/atom/${label}`, { credentials: "same-origin" });
+    const m = (await r.text()).match(/<fullcount>(\d+)<\/fullcount>/);
+    return m ? parseInt(m[1], 10) : null;
+  }
+  function refreshFeeds(force) {
+    if (!force && Date.now() - feedAt < 60000) return;
+    feedAt = Date.now();
+    Promise.all([feedCount("%5Ei"), feedCount("%5Eu")]).then(([i, u]) => { feedCounts = { inbox: i, all: u }; try { deskbar(); } catch (e) { /* ignore */ } }).catch(() => {});
+  }
+  function unreadCount() {
+    const mode = unreadMode();
+    if (mode !== "primary") refreshFeeds(false);
+    if (mode === "inbox" && feedCounts.inbox != null) return feedCounts.inbox;
+    if (mode === "all" && feedCounts.all != null) return feedCounts.all;
+    const m = document.title.match(/\((\d[\d,]*)\)/);
+    return m ? parseInt(m[1].replace(/,/g, ""), 10) : 0;
+  }
+  function unreadMenu(x, y) {
+    document.getElementById("haiku-unread-menu")?.remove();
+    const menu = make("div");
+    menu.id = "haiku-unread-menu";
+    for (const [val, label] of UNREAD_MODES) {
+      const it = make("div", "hu-item" + (unreadMode() === val ? " hu-on" : ""), label);
+      it.addEventListener("click", () => { try { localStorage.setItem(UNREAD_KEY, val); } catch (e) { /* ignore */ } feedAt = 0; menu.remove(); try { deskbar(); } catch (e) { /* ignore */ } });
+      menu.append(it);
+    }
+    document.body.append(menu);
+    menu.style.left = Math.max(4, Math.min(x, innerWidth - menu.offsetWidth - 4)) + "px";
+    menu.style.top = (y + 4) + "px";
+    const off = (e) => { if (!menu.contains(e.target)) { menu.remove(); window.removeEventListener("mousedown", off, true); } };
+    setTimeout(() => window.addEventListener("mousedown", off, true), 0);
+  }
+  function deskbar() {
+    deskbarButton();
+    document.documentElement.classList.toggle("haiku-compact", isCompact());
+    if (document.documentElement.classList.contains("haiku-popup")) return;
+    let bar = document.getElementById("haiku-deskbar");
+    if (!bar) {
+      bar = make("div");
+      bar.id = "haiku-deskbar";
+      const top = make("div", "hd-top");
+      top.title = "Account";
+      top.append(make("img"), make("img"));
+      top.addEventListener("click", () => { const a = dbAria("Google Account"); if (a) press(a); });
+      const tray = make("div", "hd-tray");
+      const mail = make("span", "hd-mail");
+      mail.title = "Unread mail";
+      const mi = make("img");
+      mi.src = icon("App_Mail");
+      mail.append(mi, make("span", "hd-count", "0"));
+      mail.addEventListener("click", () => { const q = UNREAD_MODES.find((m) => m[0] === unreadMode())[2]; location.hash = "#search/" + encodeURIComponent(q).replace(/%20/g, "+"); });
+      mail.addEventListener("contextmenu", (e) => { e.preventDefault(); unreadMenu(e.clientX, e.clientY); });
+      tray.append(mail, make("span", "hd-clock"));
+      const list = make("div", "hd-list");
+      for (const d of DESK) {
+        if (d.sep) { list.append(make("div", "hd-sep")); continue; }
+        const row = make("div", "hd-item" + (d.running ? " hd-run" : ""));
+        const im = make("img");
+        im.src = icon(d.icon);
+        row.append(im, make("span", null, d.label));
+        row.addEventListener("mousedown", (e) => e.preventDefault());
+        row.addEventListener("click", () => { if (d.run) return d.run(); const el = d.find && d.find(); if (el) press(el); });
+        row.dataset.label = d.label;
+        if (d.compactOnly) row.classList.add("hd-compact-only");
+        list.append(row);
+      }
+      const cal = make("div", "hd-cal");
+      cal.title = "Open Calendar";
+      cal.addEventListener("click", () => openApp("https://calendar.google.com/calendar/u/0/r"));
+      bar.append(top, tray, list, cal);
+      document.body.append(bar);
+
+    }
+    const lg = [...document.querySelectorAll("header img")].find((i) => /logo\.gif/.test(i.src));
+    const fc = document.querySelector('header a[aria-label^="Google Account"] img');
+    const [logo, face] = bar.querySelectorAll(".hd-top img");
+    if (lg && lg.src && logo.src !== lg.src) logo.src = lg.src;
+    if (fc && fc.src && face.src !== fc.src) face.src = fc.src;
+    drawCal(bar.querySelector(".hd-cal"));
+    { const n = String(unreadCount()); const c = bar.querySelector(".hd-count"); const what = ({ primary: "in the Primary tab", inbox: "in the whole inbox", all: "in the entire mailbox" })[unreadMode()];
+      if (c && (c.textContent !== n || bar.dataset.mode !== unreadMode())) { c.textContent = n; bar.dataset.mode = unreadMode(); bar.querySelector(".hd-mail").title = (n === "0" ? "No unread mail " : n + " unread ") + what + " (click to open them, right-click to change)"; } }
+    const t = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?[AP]M$/i, "");
+    const clock = bar.querySelector(".hd-clock");
+    if (clock.textContent !== t) clock.textContent = t;
+    for (const d of DESK) {
+      if (!d.find) continue;
+      const row = bar.querySelector(`.hd-item[data-label="${d.label}"]`);
+      const present = !!d.find();
+      if (row && row.hidden === present) row.hidden = !present;
+    }
+  }
+  setInterval(() => { try { deskbar(); } catch (e) { /* ignore */ } }, 5000);
+
   function applyAll() {
     try {
+      readTrashWindow();
+      deskbar();
       tagSenders();
       ensureToolbar();
       measureHeader();
