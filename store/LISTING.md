@@ -28,6 +28,15 @@ folder use sample data (no real mail).
 > • Tracker-style queries: one click runs a saved search (Unread, Starred,
 >   Attachments, or your own - save any Gmail search with a name and a
 >   picture). Your queries sync through your browser's sync.
+> • A Deskbar down the right edge, like Haiku's: your unread count (Primary
+>   tab, whole inbox or entire mailbox - click it to open that list), the
+>   clock, Gmail, Drive, Calendar, Keep, Tasks and Contacts, and a mini
+>   calendar. A Hide Deskbar / Show Deskbar button next to the search box
+>   puts it away.
+> • Made for running Gmail as an app: on Haiku the Deskbar becomes a compact
+>   app-window sidebar (right-click the Hide/Show button to choose either
+>   style anywhere). A guide on the project page covers Firefox, Chrome and
+>   Edge app windows.
 > • App toolbar with New, Check Mail and Google Drive, in Haiku's icons.
 > • Yellow window tabs over the message pane and the compose window, with a
 >   working close box.
@@ -37,14 +46,17 @@ folder use sample data (no real mail).
 >   formatting strip at the top, minimise and zoom boxes on the tab.
 > • Haiku controls throughout: bevelled push buttons, sunken text fields,
 >   radio buttons, checkboxes, scrollbars, menus and tab views.
-> • Compact summaries for invitations, bills and orders; a resizable folder
->   panel; a status bar with the unread count and position.
+> • Sender pictures (a person or robot icon when Gmail has none), warning
+>   cards for spam and phishing, compact summaries for invitations, bills and
+>   orders; a resizable folder panel; a status bar with the unread count and
+>   position. Works with Boomerang for Gmail.
 > • Gmail extras with no BeOS counterpart are hidden: the apps grid, Gemini,
 >   Chat and Meet, and the Material ripples.
 >
 > Everything happens in your browser. The extension collects no data and
-> makes no network requests. Besides running on mail.google.com it uses the
-> browser's extension storage, only to keep your saved queries.
+> sends nothing anywhere. Its only network requests go to Gmail itself, to
+> read your unread counts for the Deskbar. Besides running on mail.google.com
+> it uses the browser's extension storage, only to keep your saved queries.
 >
 > Works with Gmail's English interface and default inbox layout. Open source
 > (MIT): https://github.com/ojdorson/haiku-theme-for-gmail
