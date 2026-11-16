@@ -2,22 +2,57 @@
 
 Gmail with this theme looks like BeMail, so it should behave like an app too: a
 window of its own, with a title bar and nothing else, started from a shortcut,
-separate from your normal browsing.
+separate from the rest of your browsing.
 
-This works best on Haiku (or BeOS-minded Linux desktops), where a window of its
-own is exactly how an application looks. The recipe differs a little by browser.
+Which way to do it depends on your browser:
 
-## Firefox (Haiku, Linux, Windows, macOS)
+- **Chrome, Edge, Brave, Vivaldi:** install Gmail as an app. This is the proper,
+  built-in way, and it takes a minute. See [Chromium-based browsers](#chromium-based-browsers-install-gmail-as-an-app).
+- **Firefox (including Firefox on Haiku):** Firefox can't install web apps on
+  most systems, so you make a minimal window yourself with a dedicated profile.
+  See [Firefox](#firefox-a-minimal-window-with-its-own-profile).
 
-Firefox has no "install as app" feature on Haiku, so you make one with a
-dedicated profile whose toolbars are hidden. The steps were worked out on a
-Haiku nightly (hrev60413) with the Firefox package from HaikuDepot. The same
-flags exist on every platform; only the path to Firefox changes.
+## Chromium-based browsers: install Gmail as an app
 
-### 1. Create a dedicated profile
+Chrome, Edge, Brave and Vivaldi can install a site as an app (a PWA). The app
+gets its own window with no tabs or address bar, its own entry in your launcher
+or Start menu, and it remembers its size and position.
 
-A separate profile gives the window its own login, its own extensions, and none
-of your normal tabs.
+1. Open Gmail in the browser, with this theme installed (see the
+   [README](../README.md#install)).
+2. Install it as an app:
+   - **Chrome, Brave, Vivaldi:** menu → *Cast, save and share* (or *Save and
+     share*) → *Install page as app*, or click the install icon at the right end
+     of the address bar.
+   - **Edge:** menu → *Apps* → *Install this site as an app*.
+3. Confirm. Gmail opens in its own window, and you can pin it or give it a
+   keyboard shortcut like any other app.
+
+The app window runs your browser's extensions, so the theme applies. If it
+doesn't show up in the app window, check that the extension is allowed for the
+site and reload the window.
+
+Don't reach for `--app` flags or a separate `--user-data-dir`: installing it as
+an app does the same job with less to maintain.
+
+## Firefox: a minimal window with its own profile
+
+Firefox has no "install as app" feature on Haiku or most other systems. What it
+can do is hide its own toolbars with a style file, and that file applies to
+every window of a profile. So the trick is a **separate profile** used only for
+Gmail: its windows lose their toolbars, and your normal Firefox is untouched.
+
+A second profile is needed for two reasons. The toolbar-hiding file is per
+profile, so in your main profile it would hide the tabs and address bar of every
+Firefox window. And Firefox can't run two instances on the same profile, so your
+launcher would just open a normal window in the Firefox that's already running.
+The cost is a separate login and a separate copy of the theme in that profile.
+
+This was worked out on a Haiku nightly (hrev60413) with the Firefox package from
+HaikuDepot. The same flags exist on every platform; only the path to Firefox
+changes.
+
+### 1. Create the profile
 
 ```sh
 firefox -CreateProfile gmail
@@ -56,22 +91,16 @@ a file named `userChrome.css`:
 Start it again with the command from step 2. You get Gmail in a bare window: a
 title bar, and no tabs, address bar or toolbars.
 
-## Chrome, Chromium, Edge, Brave (Linux, Windows, macOS)
+### Changing things later
 
-These browsers have an app mode, so no profile editing is needed:
+With the address bar hidden, you can't type a URL, and the add-ons page is hard
+to reach. To get the toolbars back for a moment:
 
-```sh
-chromium --app=https://mail.google.com --user-data-dir="$HOME/.config/gmail-app"
-```
-
-`--app` gives a window with no tabs or address bar. `--user-data-dir` keeps its
-login and extensions apart from your normal browser; install the theme from the
-[Chrome Web Store](https://chromewebstore.google.com/detail/hbklabmgaphaoikehjpkkocdijbjnkco)
-in that window the first time, then it stays. Replace `chromium` with
-`google-chrome`, `microsoft-edge` or `brave`.
-
-If you'd rather share your normal profile, leave out `--user-data-dir`; the
-window then has your usual extensions and logins.
+1. Quit the Gmail window.
+2. Rename `chrome/userChrome.css` to `userChrome.css.off`.
+3. Start `firefox -P gmail --new-instance`. The toolbars are back, so you can add
+   or update extensions or change settings.
+4. Quit, rename the file back, and relaunch.
 
 ## Starting it
 
@@ -103,39 +132,29 @@ Tracker's file information window. It isn't tested here, so check that Tracker
 runs it when you open it. Drag it into Haiku's Deskbar and it becomes a
 one-click launch.
 
+On other systems the installed app from the Chromium section is already a
+launcher; for Firefox, use your desktop's own "add a launcher" feature with the
+command above.
+
 ## On Haiku, the theme adapts (from version 1.3.0)
 
 When the extension runs on Haiku it recognises it and shows a narrower, calmer
 **app-window sidebar** instead of the full Deskbar: the mail count at the top,
 the Google apps listed down the side, and the mini calendar at the bottom.
-Haiku's own Deskbar already gives you the clock, the other running
-programs and the account, so the theme doesn't repeat them. On other systems the
-full Deskbar appears; right-click the **Hide Deskbar** button to choose either
-style.
-
-## Changing things later
-
-With the address bar hidden, you can't type a URL, and the add-ons page is hard
-to reach. To get the toolbars back for a moment (Firefox):
-
-1. Quit the Gmail window.
-2. Rename `chrome/userChrome.css` to `userChrome.css.off`.
-3. Start `firefox -P gmail --new-instance`. The toolbars are back, so you can add
-   or update extensions or change settings.
-4. Quit, rename the file back, and relaunch.
-
-With Chromium's `--app` mode, just start the same browser without `--app` and
-with the same `--user-data-dir`.
+Haiku's own Deskbar already gives you the clock, the other running programs and
+the account, so the theme doesn't repeat them. On other systems the full
+Deskbar appears; right-click the **Hide Deskbar** button to choose either style.
 
 ## Other sites
 
-The same recipe works for any site you use a lot, such as Calendar or Drive:
-make a profile (or a `--user-data-dir`) per site and point a shortcut at it.
-Each one runs as its own browser, which costs some memory. Sites that share a
-login can share a profile; if you hide the address bar, you'll have no way to
-reach the second site, so keep the toolbars on in that profile.
+The same recipes work for any site you use a lot, such as Calendar or Drive: in
+a Chromium browser install each one as an app; in Firefox make a profile per
+site and point a shortcut at it. Each Firefox profile runs as its own browser,
+which costs some memory. If two sites share a login you can share a profile, but
+if you hide the address bar you'll have no way to reach the second site, so keep
+the toolbars on in that profile.
 
-## What doesn't work
+## What doesn't work (Firefox)
 
 - **`--kiosk`** makes the window fullscreen with no obvious way out. If you hit
   it, use Ctrl+Alt+Delete to open Team Monitor and kill Firefox. Don't use it
