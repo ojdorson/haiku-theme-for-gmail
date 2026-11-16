@@ -65,6 +65,9 @@ while Mozilla reviews updates. To use the newest one now, download
 `haiku-theme-for-gmail-<version>.xpi` (signed by Mozilla) and open it in
 Firefox, or drag it onto a Firefox window, then confirm **Add**.
 
+On Haiku, you can also run Gmail in a window of its own with no tabs or
+toolbars: see [Run Gmail in its own app window on Haiku](docs/haiku-app-window.md).
+
 ### Chrome, Chromium, Brave, Edge, Vivaldi
 
 **[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/hbklabmgaphaoikehjpkkocdijbjnkco)**
