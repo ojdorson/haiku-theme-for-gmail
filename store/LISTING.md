@@ -49,8 +49,8 @@ folder use sample data (no real mail).
 >   cards for spam and phishing, compact summaries for invitations, bills and
 >   orders; a resizable folder panel; a status bar with the unread count and
 >   position. Works with Boomerang for Gmail.
-> • Gmail extras with no BeOS counterpart are hidden: the apps grid, Gemini,
->   Chat and Meet, and the Material ripples.
+> • Gmail extras with no BeOS counterpart are hidden: the apps grid (the
+>   Deskbar replaces it), side-panel promos and the Material ripples.
 >
 > Everything happens in your browser. The extension collects no data and
 > sends nothing anywhere. Its only network requests go to Gmail itself, to
