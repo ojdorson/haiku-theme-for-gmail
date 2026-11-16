@@ -30,8 +30,7 @@ folder use sample data (no real mail).
 >   picture). Your queries sync through your browser's sync.
 > • A Deskbar down the right edge, like Haiku's: your unread count (Primary
 >   tab, whole inbox or entire mailbox - click it to open that list), the
->   clock, Gmail, Drive, Calendar, Keep, Tasks and Contacts, and a mini
->   calendar. A Hide Deskbar / Show Deskbar button next to the search box
+>   clock, shortcuts to your Google apps, and a mini calendar. A Hide Deskbar / Show Deskbar button next to the search box
 >   puts it away.
 > • Made for running Gmail as an app: on Haiku the Deskbar becomes a compact
 >   app-window sidebar (right-click the Hide/Show button to choose either
