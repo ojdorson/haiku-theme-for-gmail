@@ -27,6 +27,8 @@ Results are printed as JSON. Exchange files live in $TMPDIR/haiku-cr.
 Environment:
   CR_BINARY    Chromium to run (default /usr/bin/chromium)
   CR_APPID     window app id via --class (e.g. haiku-test-chrome)
+  CR_EXT       extension folder to load instead of this one (e.g. the release
+               build, dist/haiku-theme-for-gmail-chrome)
   CR_SCALE     --force-device-scale-factor (e.g. 1.5)
   CR_LAUNCHER  command that starts the browser for us, e.g. one that tells
                the window manager where to put the window (the Chromium
@@ -65,7 +67,7 @@ def start_browser():
         f"--user-data-dir={PROFILE}",
         f"--remote-debugging-port={PORT}",
         "--no-first-run", "--no-default-browser-check",
-        f"--load-extension={ROOT}",
+        f"--load-extension={os.environ.get('CR_EXT', ROOT)}",
         "--disable-features=DisableLoadExtensionCommandLineSwitch",
     ]
     if os.environ.get("CR_APPID"):

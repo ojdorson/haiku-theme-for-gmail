@@ -19,6 +19,11 @@
 (() => {
   "use strict";
 
+  // What the theme remembers (widths, Deskbar state, trash picture, the
+  // compose-window flag): haiku-early.js put it on <html> before the first
+  // paint; once more here in case Gmail reset <html> while loading.
+  globalThis.haikuRestore();
+
   const icon = (name) => chrome.runtime.getURL(`icons/${name}.svg`);
 
   // Actions on the open message or the selected messages. They live in the
@@ -228,7 +233,35 @@
     return tool.variants.find((v) => findOwnControl(v)) || null;
   }
 
+  // Each tool is asked about several times in one pass (its state, its
+  // variant, whether to show it at all), and searching Gmail's whole page
+  // by attribute is slow: within a pass each tool's answer is kept, and the
+  // link-style buttons are read once. `pass` holds that; a click looks
+  // afresh.
+  let pass = null;
   function findOwnControl(tool) {
+    if (!pass) {
+      pass = new Map();
+      try { return lookUpControl(tool); } finally { pass = null; }
+    }
+    if (!pass.has(tool)) pass.set(tool, lookUpControl(tool));
+    return pass.get(tool);
+  }
+  // Gmail's link-style buttons by their visible text, in page order.
+  function controlsByText() {
+    let map = pass.get(controlsByText);
+    if (map) return map;
+    map = new Map();
+    for (const el of document.querySelectorAll('span[role="link"], [role="button"]')) {
+      const text = el.textContent.trim();
+      if (map.has(text)) map.get(text).push(el);
+      else map.set(text, [el]);
+    }
+    pass.set(controlsByText, map);
+    return map;
+  }
+
+  function lookUpControl(tool) {
     if (tool.selector) {
       return [...document.querySelectorAll(tool.selector)].find((el) => isVisible(el) && !inOurChrome(el)) || null;
     }
@@ -242,9 +275,7 @@
       if (hit) return hit;
     }
     for (const text of tool.text || []) {
-      const hit = [...document.querySelectorAll('span[role="link"], [role="button"]')].find(
-        (el) => el.textContent.trim() === text && isVisible(el) && !inOurChrome(el),
-      );
+      const hit = (controlsByText().get(text) || []).find((el) => isVisible(el) && !inOurChrome(el));
       if (hit) return hit;
     }
     return null;
@@ -274,14 +305,8 @@
   // opens that page, and haiku.css hides the main-window chrome there via
   // <html class="haiku-popup">.
   const SEPARATE_COMPOSE = false;
-  // Compose pages in their own window: ours, Gmail's compose URL, or a
-  // window Gmail itself opened (its pop-out button). Not a Gmail tab that
-  // some other site opened - reading a cross-origin opener throws.
-  const openedByGmail = (() => {
-    try { return !!window.opener && window.opener.location.origin === location.origin; } catch (e) { return false; }
-  })();
-  const POPUP = openedByGmail || window.name.startsWith("haiku-compose-") || /[?&](view|tf)=cm\b/.test(location.search);
-  document.documentElement.classList.toggle("haiku-popup", POPUP);
+  // Compose pages in their own window (see haiku-early.js, which marks them).
+  const POPUP = document.documentElement.classList.contains("haiku-popup");
   // The pop-out window's tab has a close box (drawn by haiku.css at the
   // tab's left end): clicking it closes the window.
   if (POPUP) {
@@ -598,7 +623,9 @@
   }
   let absentRetries = { view: "", left: 0 };
 
-  function ensureMessageTools() {
+  // `placeOnly` (a layout pass): where the strip goes and how much fits,
+  // without asking Gmail again which actions it offers.
+  function ensureMessageTools(placeOnly) {
     const thread = document.documentElement.classList.contains("haiku-thread");
     const ctx = thread ? "thread" : "list";
     const anchorBtn = [...document.querySelectorAll(STRIPS[ctx].anchor)].find((el) => isVisible(el) && !inOurChrome(el));
@@ -614,7 +641,7 @@
     root.classList.toggle("haiku-has-msgtools", !!anchorBtn);
     strip.hidden = !anchorBtn;
     if (!anchorBtn) return closeSpareMenu();
-    hideAbsentTools(strip);
+    if (!placeOnly) hideAbsentTools(strip);
     const [full, compact] = measureStrip(strip);
     // Room up to the visible edge (Gmail gives its bar a minimum width, so
     // in a narrow window it runs past the edge and is cut off there), less
@@ -637,6 +664,7 @@
     const s = strip.style, l = `${Math.round(r.right)}px`, t = `${Math.round(r.top)}px`;
     if (s.left !== l) s.left = l;
     if (s.top !== t) s.top = t;
+    if (placeOnly) return;
     updateToolStates(strip);
     // A list's actions apply to the selected messages: greyed until there
     // are some (Gmail keeps its own hidden buttons enabled regardless).
@@ -1011,12 +1039,6 @@
     root.classList.add("haiku-from-sized");
     return w;
   };
-  try {
-    const saved = parseInt(localStorage.getItem(FROM_KEY), 10);
-    if (saved) setFromWidth(saved);
-  } catch (e) {
-    /* storage unavailable: Gmail's width */
-  }
 
   function startFromResize(e) {
     if (e.button !== 0) return;
@@ -1058,7 +1080,12 @@
   }
 
   const sized = new WeakSet();
-  const listSize = new ResizeObserver(() => schedule());
+  const listSize = new ResizeObserver(() => resized());
+
+  function placeMessageTools() { ensureMessageTools(true); }
+
+  // The list on screen and whether its headers are pinned (see onScroll).
+  let listTable = null, listPinned = false;
 
   function ensureColumns() {
     const table = [...document.querySelectorAll('[role="main"] table.F')].find(isVisible);
@@ -1069,6 +1096,8 @@
       el.addEventListener("mousedown", (e) => { if (e.target.closest(".haiku-column-grip")) startFromResize(e); });
       el.addEventListener("dblclick", (e) => { if (e.target.closest(".haiku-column-grip")) resetFromWidth(); });
     });
+    listTable = first ? table : null;
+    listPinned = !!(first && table.closest(".Nu"));
     document.documentElement.classList.toggle("haiku-has-columns", !!first);
     head.hidden = !first;
     if (!first) return;
@@ -1134,12 +1163,6 @@
     document.documentElement.style.setProperty("--haiku-nav-w", `${w}px`);
     return w;
   };
-  try {
-    const saved = parseInt(localStorage.getItem(NAV_KEY), 10);
-    if (saved) setNavWidth(saved);
-  } catch (e) {
-    /* storage unavailable: default width */
-  }
 
   function ensureSplitter() {
     const panel = [...document.querySelectorAll(".aqn.aIH")].find(isVisible);
@@ -1155,7 +1178,7 @@
         let w = startW;
         const move = (ev) => {
           w = setNavWidth(startW + ev.clientX - startX);
-          schedule();
+          relayout();
         };
         const up = () => {
           window.removeEventListener("mousemove", move, true);
@@ -1265,10 +1288,12 @@
 
   // Gmail-only extras that have no stable attribute to target from CSS.
   const HIDE_TEXT = ["Share in chat"];
+  const isExtra = (text) => HIDE_TEXT.some((s) => text.startsWith(s));
   function hideExtras() {
-    for (const el of document.querySelectorAll('span.ams, [role="button"]')) {
-      if (el.style.display !== "none" && HIDE_TEXT.some((s) => el.textContent.trim().startsWith(s))) el.style.display = "none";
-    }
+    const hide = (el) => { if (el.style.display !== "none") el.style.display = "none"; };
+    // The buttons were already read once this pass (controlsByText).
+    for (const [text, els] of controlsByText()) if (isExtra(text)) els.forEach(hide);
+    for (const el of document.querySelectorAll("span.ams")) if (isExtra(el.textContent.trim())) hide(el);
   }
 
   // The folder-list button shows and hides the sidebar, but Google's
@@ -1277,9 +1302,11 @@
   // paint, so the old wording never shows. Matched on the exact text, not
   // Google's class names; our own rewrite doesn't match, so no loop.
   const TIP_TEXT = { "Hide main menu": "Hide sidebar", "Show main menu": "Show sidebar" };
+  const TRASHED = /\bmoved to (the )?trash\b/i; // Gmail's notice after any delete
   const fixText = (t) => {
     const want = TIP_TEXT[t.nodeValue.trim()];
     if (want) t.nodeValue = want;
+    else if (TRASHED.test(t.nodeValue)) setTrash(true);
   };
   // A tooltip can arrive as a small element with its text already inside;
   // only small subtrees are scanned, so Gmail's big DOM updates stay cheap.
@@ -1289,31 +1316,26 @@
     const walk = document.createTreeWalker(n, NodeFilter.SHOW_TEXT);
     for (let t = walk.nextNode(); t; t = walk.nextNode()) fixText(t);
   };
-  new MutationObserver((records) => {
-    for (const r of records) {
-      if (r.type === "characterData") fixText(r.target);
-      else for (const n of r.addedNodes) fixTip(n);
-    }
-  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  // (The driver's observer at the end of this file calls these.)
   // Tooltips Google built before this script ran (only shown/hidden later):
   // the Google bar's few [ng-non-bindable] nodes hold them.
   const fixTooltips = () => { for (const el of document.querySelectorAll("[ng-non-bindable]")) fixTip(el); };
 
   // ------------------------------------------------------------- driver
-  // Trash picture: Haiku's full bin whenever the Trash has anything in it, the
-  // empty one only when it's empty. Gmail doesn't say, so: the Trash window
-  // is read when it's open (exact), deleting anything sets it full, and a
-  // light check of Gmail's basic HTML Trash runs now and then. The answer
-  // is kept in localStorage; until it's known the bin shows full.
+  // Trash picture: Haiku's full bin unless the Trash is known to be empty.
+  // Gmail doesn't say what's in it, so: the Trash window is read when it's
+  // open (exact), and anything deleted here sets it full. "Empty" is only
+  // remembered for this tab's session (haiku-early.js restores it), since
+  // mail deleted elsewhere - another device, a filter - can't be seen: a
+  // new window starts with the full bin again.
   const TRASH_KEY = "haiku-trash";
   const trashIcon = () => (document.documentElement.dataset.haikuTrash === "empty" ? "trash-empty" : "trash-full");
   function setTrash(full) {
     const v = full ? "full" : "empty";
     if (document.documentElement.dataset.haikuTrash === v) return;
     document.documentElement.dataset.haikuTrash = v;
-    try { localStorage.setItem(TRASH_KEY, v); } catch (e) { /* private mode */ }
+    try { sessionStorage.setItem(TRASH_KEY, v); } catch (e) { /* private mode */ }
   }
-  try { document.documentElement.dataset.haikuTrash = localStorage.getItem(TRASH_KEY) === "empty" ? "empty" : "full"; } catch (e) { document.documentElement.dataset.haikuTrash = "full"; }
   function readTrashWindow() {
     if (!/^#trash(\/|$)/.test(location.hash || "") || !/^Trash\b/i.test(document.title || "")) return;
     // Any list rows on screen mean it has items; Gmail's own "No conversations
@@ -1322,18 +1344,9 @@
     if ([...document.querySelectorAll("tr.zA")].some((r) => r.offsetParent)) setTrash(true);
     else if (/no (conversations|messages) in (the )?trash/i.test(document.body.innerText || "")) setTrash(false);
   }
-  async function probeTrash() {
-    try {
-      const res = await fetch(`${location.pathname.replace(/\/$/, "").split("/").slice(0, 4).join("/")}/h/?s=t`, { credentials: "same-origin" });
-      if (!res.ok) return;
-      const html = await res.text();
-      if (/href="\?&amp;th=|href="\?&th=/.test(html)) setTrash(true);
-      else if (/no (conversations|messages) in (the )?trash/i.test(html)) setTrash(false);
-    } catch (e) { /* offline or blocked: keep what we know */ }
-  }
-  setTimeout(probeTrash, 4000);
-  setInterval(() => { if (!/^#trash/.test(location.hash || "")) probeTrash(); }, 10 * 60 * 1000);
-  // Anything deleted from here (the Delete button, or Gmail's # shortcut) fills it.
+  // Anything deleted from here fills it: the Delete button, Gmail's #
+  // shortcut, or any other way that ends in Gmail's "moved to Trash"
+  // notice (see fixText).
   window.addEventListener("click", (e) => {
     if (/^#(trash|spam)/.test(location.hash || "")) return;
     const b = e.target.closest && e.target.closest('[data-tool="trash"], [data-tooltip="Delete"], [aria-label="Delete"]');
@@ -1368,7 +1381,12 @@
   // ---------------------------------------------------------------- Deskbar
   // Haiku's Deskbar at the right edge: account at the top, a tray (clock),
   // then the apps. Entries press Gmail's own side-panel and header controls.
-  const dbAria = (label, role) => [...document.querySelectorAll(`${role || ""}[aria-label="${label}"], ${role || ""}[aria-label^="${label}"]`)].find((e) => !e.closest("#haiku-deskbar"));
+  // They live in Gmail's header: look there first (the whole page is slow to search).
+  const dbAria = (label, role) => {
+    const css = `${role || ""}[aria-label="${label}"], ${role || ""}[aria-label^="${label}"]`;
+    const header = document.querySelector('header[role="banner"]');
+    return (header && header.querySelector(css)) || [...document.querySelectorAll(css)].find((e) => !e.closest("#haiku-deskbar"));
+  };
   // Calendar, Keep, Tasks and Contacts open as small separate windows (Gmail's own side panel can't be opened from outside).
   const openApp = (url) => window.open(url, "_blank", "popup=yes,width=440,height=680");
   const DESK = [
@@ -1390,7 +1408,6 @@
     try { localStorage.setItem(DB_KEY, on ? "on" : "off"); } catch (e) { /* ignore */ }
     window.dispatchEvent(new Event("resize"));
   }
-  try { document.documentElement.classList.toggle("haiku-deskbar-off", localStorage.getItem(DB_KEY) === "off"); } catch (e) { /* ignore */ }
   // A month grid under the Deskbar's list; today is marked.
   function drawCal(cal) {
     const now = new Date();
@@ -1444,10 +1461,11 @@
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => setDeskbar(document.documentElement.classList.contains("haiku-deskbar-off")));
       b.addEventListener("contextmenu", (e) => { e.preventDefault(); styleMenu(e.clientX, e.clientY); });
+      b.hidden = true; // until Gmail's header and our toolbar are there to place it by
       document.body.append(b);
     }
     let sp = document.getElementById("haiku-deskbar-sep");
-    if (!sp) { sp = make("div", "haiku-toolbar-sep"); sp.id = "haiku-deskbar-sep"; document.body.append(sp); }
+    if (!sp) { sp = make("div", "haiku-toolbar-sep"); sp.id = "haiku-deskbar-sep"; sp.hidden = true; document.body.append(sp); }
     const form = document.querySelector('header form[role="search"]');
     if (!form) return;
     const r = form.getBoundingClientRect();
@@ -1458,6 +1476,7 @@
     if (ref) { const rr = ref.getBoundingClientRect(); const t = Math.round(rr.top) + "px", h = Math.round(rr.height) + "px"; if (b.style.top !== t) b.style.top = t; if (b.style.height !== h) b.style.height = h; if (sp.style.top !== t) sp.style.top = t; if (sp.style.height !== h) sp.style.height = h; }
     if (b.style.left !== left) b.style.left = left;
     { const sl = (Math.round(Math.min(r.right + 6, innerWidth - 70)) - 3) + "px"; if (sp.style.left !== sl) sp.style.left = sl; }
+    if (b.hidden && ref) b.hidden = sp.hidden = false; // placed in both directions
     const off = document.documentElement.classList.contains("haiku-deskbar-off");
     const noun = isCompact() ? "Sidebar" : "Deskbar";
     b.title = (off ? "Show the " : "Hide the ") + noun + " (right-click to change style)";
@@ -1484,7 +1503,7 @@
     return m ? parseInt(m[1], 10) : null;
   }
   function refreshFeeds(force) {
-    if (!force && Date.now() - feedAt < 60000) return;
+    if (!force && Date.now() - feedAt < 55000) return;
     feedAt = Date.now();
     Promise.all([feedCount("%5Ei"), feedCount("%5Eu")]).then(([i, u]) => { feedCounts = { inbox: i, all: u }; try { deskbar(); } catch (e) { /* ignore */ } }).catch(() => {});
   }
@@ -1557,12 +1576,7 @@
     const [logo, face] = bar.querySelectorAll(".hd-top img");
     if (lg && lg.src && logo.src !== lg.src) logo.src = lg.src;
     if (fc && fc.src && face.src !== fc.src) face.src = fc.src;
-    drawCal(bar.querySelector(".hd-cal"));
-    { const n = String(unreadCount()); const c = bar.querySelector(".hd-count"); const what = ({ primary: "in the Primary tab", inbox: "in the whole inbox", all: "in the entire mailbox" })[unreadMode()];
-      if (c && (c.textContent !== n || bar.dataset.mode !== unreadMode())) { c.textContent = n; bar.dataset.mode = unreadMode(); bar.querySelector(".hd-mail").title = (n === "0" ? "No unread mail " : n + " unread ") + what + " (click to open them, right-click to change)"; } }
-    const t = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?[AP]M$/i, "");
-    const clock = bar.querySelector(".hd-clock");
-    if (clock.textContent !== t) clock.textContent = t;
+    deskTick();
     for (const d of DESK) {
       if (!d.find) continue;
       const row = bar.querySelector(`.hd-item[data-label="${d.label}"]`);
@@ -1570,27 +1584,68 @@
       if (row && row.hidden === present) row.hidden = !present;
     }
   }
-  setInterval(() => { try { deskbar(); } catch (e) { /* ignore */ } }, 5000);
+  // What changes with time alone: the clock, the calendar's day, the count.
+  function deskTick() {
+    const bar = document.getElementById("haiku-deskbar");
+    if (!bar) return;
+    drawCal(bar.querySelector(".hd-cal"));
+    { const n = String(unreadCount()); const c = bar.querySelector(".hd-count"); const what = ({ primary: "in the Primary tab", inbox: "in the whole inbox", all: "in the entire mailbox" })[unreadMode()];
+      if (c && (c.textContent !== n || bar.dataset.mode !== unreadMode())) { c.textContent = n; bar.dataset.mode = unreadMode(); bar.querySelector(".hd-mail").title = (n === "0" ? "No unread mail " : n + " unread ") + what + " (click to open them, right-click to change)"; } }
+    const t = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?[AP]M$/i, "");
+    const clock = bar.querySelector(".hd-clock");
+    if (clock.textContent !== t) clock.textContent = t;
+  }
+  // Once a minute, on the minute, and not while the tab is hidden (it
+  // catches up when the tab shows again).
+  const everyMinute = () => {
+    if (!document.hidden) { try { deskTick(); } catch (e) { /* ignore */ } }
+    setTimeout(everyMinute, 60000 - (Date.now() % 60000) + 20);
+  };
+  setTimeout(everyMinute, 60000 - (Date.now() % 60000) + 20);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { try { deskTick(); } catch (e) { /* ignore */ } } });
 
-  function applyAll() {
+  // Timing for development: with localStorage "haiku-perf" set, the number
+  // of passes, their total time and each step's share show in
+  // <html data-haiku-perf>.
+  const PERF = (() => { try { return !!localStorage.getItem("haiku-perf"); } catch (e) { return false; } })();
+  const perf = { n: 0, ms: 0, steps: {} };
+
+  // Two kinds of pass. A full pass does everything, in this order. A layout
+  // pass only puts things where they belong - what a resize, a drag or a
+  // scroll can change - and so never searches the page for Gmail's controls.
+  const FULL = [
+    readTrashWindow, deskbar, tagSenders, ensureToolbar, measureHeader, ensureSplitter,
+    ensureListTab, ensureMessageTools, ensureColumns, ensureStatusBar, hideExtras, fixTooltips,
+  ];
+  const LAYOUT = [
+    ensureToolbar, measureHeader, deskbarButton, ensureSplitter, ensureListTab, placeMessageTools, ensureColumns,
+  ];
+  function run(steps) {
+    pass = new Map();
+    const start = PERF ? performance.now() : 0;
     try {
-      readTrashWindow();
-      deskbar();
-      tagSenders();
-      ensureToolbar();
-      measureHeader();
-      ensureSplitter();
-      ensureListTab();
-      ensureMessageTools();
-      ensureColumns();
-      ensureStatusBar();
-      hideExtras();
-      fixTooltips();
+      for (const step of steps) {
+        if (!PERF) step();
+        else {
+          const t0 = performance.now();
+          try { step(); } finally { perf.steps[step.name] = (perf.steps[step.name] || 0) + performance.now() - t0; }
+        }
+      }
     } catch (err) {
       console.debug("[gmail-haiku]", err);
+    } finally {
+      pass = null;
+    }
+    if (PERF) {
+      perf.ms += performance.now() - start;
+      if (steps === LAYOUT) perf.steps.layoutPasses = (perf.steps.layoutPasses || 0) + 1;
+      document.documentElement.dataset.haikuPerf = `${++perf.n} ${perf.ms.toFixed(0)} ` +
+        Object.entries(perf.steps).filter(([, ms]) => ms >= 1).map(([k, ms]) => `${k}:${ms.toFixed(0)}`).join(" ");
     }
   }
 
+  // A full pass, a quarter second after Gmail last gave cause for one (it
+  // changes its page in bursts).
   let queued = false;
   const schedule = () => {
     if (queued) return;
@@ -1598,21 +1653,62 @@
     requestAnimationFrame(() => {
       setTimeout(() => {
         queued = false;
-        applyAll();
+        run(FULL);
       }, 250);
     });
   };
-
-  // Ignore mutations we caused ourselves, or the observer would loop.
-  const observer = new MutationObserver((records) => {
-    if (records.every((r) => r.target.closest && r.target.closest("[data-haiku]"))) return;
+  // A layout pass, in the next frame: our overlays keep up with a resize or
+  // a drag instead of trailing it.
+  let layoutQueued = false;
+  const relayout = () => {
+    if (layoutQueued) return;
+    layoutQueued = true;
+    requestAnimationFrame(() => {
+      layoutQueued = false;
+      run(LAYOUT);
+    });
+  };
+  // Sizes changed: move things now, and settle with a full pass after.
+  const resized = () => {
+    relayout();
     schedule();
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
+  };
+  // Scrolling moves none of our overlays (they sit over Gmail's panes, not
+  // in them), with two exceptions: the page itself scrolling, and the list -
+  // sideways always, up and down only where its headers aren't pinned to
+  // the scrolling pane. Reading a message or the folder list costs nothing.
+  const scrolledLeft = new WeakMap();
+  const onScroll = (e) => {
+    const t = e.target;
+    if (t === document) return relayout();
+    if (!listTable || !t.contains(listTable)) return;
+    const left = t.scrollLeft, was = scrolledLeft.get(t) || 0;
+    scrolledLeft.set(t, left);
+    if (!listPinned || left !== was) relayout();
+  };
+
+  // One observer for the whole page. Tooltips are fixed at once (see
+  // fixTip); anything Gmail added or removed schedules a full pass. Changed
+  // text alone doesn't (typing a message), nor do changes we made ourselves,
+  // or the observer would loop.
+  new MutationObserver((records) => {
+    let theirs = false;
+    for (const r of records) {
+      if (r.type === "characterData") {
+        fixText(r.target);
+        continue;
+      }
+      for (const n of r.addedNodes) fixTip(n);
+      // Not ours, and not the text of a message being written (new lines
+      // there add and remove nodes all the time).
+      if (!theirs && !r.target.isContentEditable && !r.target.closest("[data-haiku]")) theirs = true;
+    }
+    if (theirs) schedule();
+  }).observe(document.body, { childList: true, subtree: true, characterData: true });
   window.addEventListener("click", schedule, true);
-  window.addEventListener("resize", schedule);
-  window.addEventListener("scroll", schedule, true);
+  window.addEventListener("resize", resized);
+  window.addEventListener("scroll", onScroll, true);
   window.addEventListener("hashchange", schedule);
   new MutationObserver(schedule).observe(document.querySelector("title") || document.head, { childList: true, subtree: true, characterData: true });
-  applyAll();
+  run(FULL);
 })();

@@ -3,6 +3,34 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.4.0 (17 November 2026)
+
+Faster and steadier, and replies that look like BeMail.
+
+- **Replies as a small BeMail window.** Reply and Forward in an open message
+  now have a grey Haiku panel with a **To:** label like the message header,
+  the Send row (and any warning) and the formatting tools above the text, and
+  the text field as the one white area. Send stays put however long the reply
+  grows.
+- **Reply and Forward moved into the message header**, at the right under the
+  date and star, instead of a white bar pinned over the bottom of the message.
+- **Quicker.** The theme does much less work while Gmail runs: scrolling a
+  message, the list or the folders costs nothing; resizing the window or
+  dragging the splitter moves the window tab and column headings with the
+  mouse instead of trailing it; the Deskbar clock ticks once a minute and
+  rests while the tab is hidden.
+- **No unthemed flash on load.** The stylesheet and your saved layout (folder
+  panel and From column widths, Deskbar shown or hidden) are in place before
+  Gmail draws anything.
+- **Trash icon** shows the full bin unless the Trash is known to be empty:
+  opening an empty Trash shows the empty bin; anything deleted (any way) fills
+  it again. The old background check, which no longer worked since Google
+  retired Gmail's basic HTML view, is gone.
+- Fixed: on load, Google's Help (?) button showed beside the Deskbar button
+  and pushed it and the search field out of place for a few seconds.
+- Fixed: long notices (e.g. after Not Junk) ran out of the notice card; they
+  now wrap inside it, with Undo at the right.
+
 ## 1.3.0 (16 November 2026)
 
 The Deskbar, and Gmail as a window of its own.

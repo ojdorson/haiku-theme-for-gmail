@@ -29,7 +29,7 @@ import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
-SHIP = ["haiku.js", "README.md", "LICENSE", "CREDITS.md", "CHANGELOG.md"]
+SHIP = ["haiku-early.js", "haiku.js", "README.md", "LICENSE", "CREDITS.md", "CHANGELOG.md"]
 GMAIL = "https://mail.google.com/*"
 CHROME_ICON_URL = "chrome-extension://__MSG_@@extension_id__/icons/"
 GECKO_ID = "haiku-theme-for-gmail@ojdorson.github.io"
@@ -48,7 +48,10 @@ base = {
     # account sync; no warning at install).
     "permissions": ["storage"],
     "content_scripts": [
-        {"matches": [GMAIL], "css": ["haiku.css"], "js": ["haiku.js"], "run_at": "document_idle"},
+        # The stylesheet and the remembered layout go in before Gmail's first
+        # paint, so it never shows unthemed; the rest waits for Gmail to load.
+        {"matches": [GMAIL], "css": ["haiku.css"], "js": ["haiku-early.js"], "run_at": "document_start"},
+        {"matches": [GMAIL], "js": ["haiku.js"], "run_at": "document_idle"},
     ],
     "web_accessible_resources": [{"resources": ["icons/*.svg"], "matches": [GMAIL]}],
 }
@@ -94,7 +97,7 @@ for browser, target in TARGETS.items():
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 
     # Every file the manifest names must exist; no dev files.
-    for path in [*manifest["icons"].values(), "haiku.css", "haiku.js"]:
+    for path in [*manifest["icons"].values(), "haiku.css", "haiku-early.js", "haiku.js"]:
         assert (out / path).is_file(), f"{browser}: missing {path}"
     assert not any(out.glob("dev-*")), f"{browser}: dev files leaked into the release"
     if browser == "firefox":

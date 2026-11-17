@@ -314,6 +314,14 @@ html body .vh { display: flex !important; align-items: center !important; gap: 1
 html body .vh .bBe { position: static !important; inset: auto !important; margin: 0 !important; flex: none !important; }
 html body .vh .bAq { margin: 0 12px 0 0 !important; }
 html body .vh .aT { align-items: center !important; }
+/* A long notice (e.g. after Not Junk) wraps inside the card: the message
+ * takes the room that's left, Undo and the close box keep theirs. */
+html body .vh { max-width: min(720px, calc(100vw - 48px)) !important; box-sizing: border-box !important; }
+html body .vh .aT { display: flex !important; flex-wrap: nowrap !important; flex: 1 1 auto !important; min-width: 0 !important; justify-content: flex-start !important; gap: 12px !important; }
+html body .vh .bAq { flex: 1 1 auto !important; min-width: 0 !important; margin: 0 !important; text-align: left !important; overflow-wrap: anywhere !important; }
+html body .vh .bAq, html body .vh .bAq * { white-space: normal !important; }
+html body .vh .bAo { flex: none !important; white-space: nowrap !important; margin: 0 !important; }
+html body .vh .bAo [role="link"] { min-height: 0 !important; height: auto !important; }
 
 /* ==================================================== 4. Injected chrome */
 /* haiku.js positions these over Gmail without touching Gmail's DOM. */
@@ -2654,3 +2662,70 @@ html.haiku-deskbar-off:not(.haiku-popup) header div:has(> form[role=search]) { p
 .haiku-statusbar { min-width: 0; overflow: hidden; }
 html:not(.haiku-popup):not(.haiku-deskbar-off) .haiku-statusbar { right: 150px; }
 html.haiku-compact:not(.haiku-popup):not(.haiku-deskbar-off) .haiku-statusbar { right: 148px; }
+
+/* Google's Help (?) button before Gmail has named it "Support": for the first
+ * seconds of a load it has no label, showed beside the Deskbar button and
+ * pushed the search field (and that button) out of place. */
+html:not(.haiku-popup) header[role="banner"] a[role="button"]:not([aria-label]) { opacity: 0 !important; pointer-events: none !important; position: absolute !important; }
+
+/* Reply / Forward at the end of a thread. Gmail pins them to the bottom of
+ * the window in a white bar that covers the message's text; here they sit
+ * in the last message's header, at the right under its date and star.
+ * Older browsers (no CSS anchor positioning): at the end of the thread,
+ * not pinned. */
+html body .a98.iY > .btDi4d { position: static !important; }
+@supports (anchor-name: --haiku) {
+  html body .adn .gE.iv.gt { anchor-name: --haiku-last-header; }
+  html body .a98.iY:has(> .btDi4d) { position: relative !important; }
+  html body .a98.iY > .btDi4d {
+    position: absolute !important; position-anchor: --haiku-last-header;
+    inset: auto calc(anchor(right) + 6px) calc(anchor(bottom) + 2px) auto !important;
+    width: auto !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important;
+    background: transparent !important; border: 0 !important; z-index: 2 !important;
+  }
+  html body .a98.iY > .btDi4d .amr { padding: 0 !important; background: transparent !important; }
+  html body .a98.iY > .btDi4d .amn .ams { height: 20px !important; min-height: 0 !important; line-height: 18px !important; }
+}
+
+/* Reply / Forward in an open thread, as a small BeMail window: a grey panel
+ * with a "To:" label column like the message header above it, the text
+ * field as its one white area, and BeMail's order: the Send row (with any
+ * warning under it) and the formatting strip above the text, where they
+ * stay put however long the reply grows. */
+html body .ip.adB :is(td.I5, table.IG, .qz, td.Ap) { background: var(--haiku-panel) !important; }
+html body .ip.adB td.I5 { border: 1px solid var(--haiku-frame) !important; box-shadow: inset 1px 1px 0 var(--haiku-shine) !important; }
+html body .ip.adB form.bAs { position: relative !important; padding-left: 54px !important; }
+html body .ip.adB form.bAs::before {
+  content: "To:"; position: absolute; left: 0; top: 0; bottom: 0; width: 54px;
+  padding: 0 6px 0 0; box-sizing: border-box; text-align: right;
+  font: bold 12px/48px var(--haiku-font); color: #000;
+  background: var(--haiku-panel-dark); border-right: 1px solid var(--haiku-shadow);
+}
+html body .ip.adB table.IG { padding-left: 8px !important; }
+html body .ip.adB .Ar.Au {
+  background: var(--haiku-document) !important; border: 1px solid var(--haiku-frame) !important;
+  box-shadow: inset 1px 1px 0 var(--haiku-shadow) !important;
+}
+html body .ip.adB table.iN > tbody { display: flex !important; flex-direction: column !important; }
+html body .ip.adB table.iN > tbody > tr { display: block !important; }
+html body .ip.adB table.iN > tbody > tr > td { display: block !important; width: auto !important; }
+html body .ip.adB table.iN > tbody > tr:has(> td.HE) { order: -1 !important; }
+html body .ip.adB .aDj { display: flex !important; flex-direction: column !important; }
+html body .ip.adB .aDj > .aDh { order: -1 !important; display: flex !important; flex-direction: column !important; }
+html body .ip.adB .aDj > .aDh > table.IZ { order: -1 !important; }
+html body .ip.adB :is(td.HE, .aDg) { height: auto !important; min-height: 0 !important; background: var(--haiku-panel) !important; }
+html body .ip.adB .aDj { position: static !important; inset: auto !important; width: 100% !important; height: auto !important; border-bottom: 1px solid var(--haiku-shadow) !important; }
+html body .ip.adB .aDj :is(.aDl, .aC5, .aDx) { height: auto !important; min-height: 0 !important; }
+html body .ip.adB .aDj .Ur { position: static !important; inset: auto !important; width: auto !important; margin: 0 !important; padding: 4px 6px 0 !important; }
+html body .ip.adB .aDj .aDh { border-top: 0 !important; }
+html body .ip.adB .aDj :is(.Ur, .aX, .aZ, .aDh) { height: auto !important; }
+html body .ip.adB .aDj .aDh { padding: 2px 6px 4px !important; }
+/* Gmail keeps room under the text for the formatting strip it floats there;
+ * the strip now sits in the dock. */
+html body .ip.adB .bA3 > div[style*="height"]:not(.GM) { height: 0 !important; }
+html body .ip.adB .aDg > .aC4:empty { display: none !important; } /* room Gmail keeps under its floating Send bar */
+html body .ip.adB .aDj .aZ > .J-Z { margin: 4px 0 2px !important; }
+/* Gmail's floating copy of the recipients, shown over a long reply as it
+ * scrolls: with the Send row above the text it isn't needed, and it landed
+ * as a white sheet over the reply. */
+html body .ip.adB .aC2 { display: none !important; }
