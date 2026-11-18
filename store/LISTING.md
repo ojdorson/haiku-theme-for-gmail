@@ -78,6 +78,16 @@ folder use sample data (no real mail).
 | `promo-440x280.png` | Small promo tile (440×280) |
 | `marquee-1400x560.png` | Marquee promo tile (1400×560, optional) |
 
+Screenshot captions (Firefox Add-ons shows one under each picture; the
+Chrome Web Store has none):
+
+1. Your inbox as a Tracker window: BeOS-style app bar with Check Mail and saved queries, folder sidebar, Haiku list columns and the Deskbar.
+2. An open message with its own action toolbar (Reply, Reply All, Forward, Archive, Trash, Junk, Unread, Print, Previous, Next), and Reply and Forward in the message header.
+3. Saved queries, like Tracker's: the Starred query's results, with the right-click menu to edit, move or remove it.
+4. Edit Query: give any Gmail search a name and a Haiku-style picture, and it becomes a toolbar button.
+5. New Message as a BeMail window: a yellow tab with close and zoom boxes, and the Send row and formatting tools above the text.
+6. On Haiku the Deskbar becomes a compact app-window sidebar: your unread count, Google apps and a mini calendar. Right-click Hide/Show to choose either style.
+
 All screenshots use sample mail, never real messages. To retake them: start
 the Chrome test window at 1x (`CR_EXT=$PWD/dist/haiku-theme-for-gmail-chrome
 CR_SCALE=1 ... tools/crdrive.py serve`), set a 1280×800 viewport with
