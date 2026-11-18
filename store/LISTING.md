@@ -87,9 +87,9 @@ per scene call `haikuSample.list()`, `.chrome()`, `.message({...})` or
 `.compose({...})`. It only changes what's on screen; reload the page to undo.
 Check each picture for real names before saving. Save as 24-bit RGB PNG
 (`magick in.png -alpha off -depth 8 -define png:color-type=2 out.png`): the
-Chrome Web Store rejects 16-bit and alpha images. Firefox Add-ons takes them
-through its API (previews: POST `image`, then PATCH the caption); the Chrome
-Web Store only through its dashboard.
+Chrome Web Store rejects 16-bit and alpha images. Upload them through each
+store's dashboard: Mozilla's API takes screenshots too, but throttles it to a
+crawl. The Chrome Web Store allows five, so it leaves out screenshot 3.
 
 ## Privacy practices
 
