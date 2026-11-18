@@ -3,6 +3,25 @@
 Downloads for every version are on the
 [Releases page](https://github.com/ojdorson/haiku-theme-for-gmail/releases).
 
+## 1.4.1 (17 November 2026)
+
+Polish, and fixes for a Google update.
+
+- **Replies match the New Message window**: the same Send row, buttons and
+  formatting strip, a plain **To:** label, a single separator line and no
+  boxes inside, with the text lined up under the toolbar.
+- **The New Message window's zoom box** is drawn as Haiku draws it: two
+  overlapping squares, the small one over the larger.
+- Fixed: the New Message window ran under the Deskbar at narrower window
+  widths, hiding its right edge and Discard button.
+- Fixed: an empty grey band at the bottom of the New Message window.
+- Fixed: the open message's scrollbar stuck out past its window frame.
+- Fixed after a Google update to Gmail's page: your Workspace logo showed
+  again beside the Deskbar button, the folder list lost its white background
+  and frame, and the Hide Deskbar label ran under the Deskbar. The theme now
+  finds these by steadier means, so later renames are less likely to undo
+  them.
+
 ## 1.4.0 (17 November 2026)
 
 Faster and steadier, and replies that look like BeMail.

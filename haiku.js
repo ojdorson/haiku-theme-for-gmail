@@ -1215,6 +1215,11 @@
         document.documentElement.style.setProperty("--haiku-toolbar-w", w);
       }
     }
+    // The strip the Deskbar stands on (the page ends where it starts).
+    const reserve = `${Math.max(0, Math.round(innerWidth - document.documentElement.getBoundingClientRect().right))}px`;
+    if (document.documentElement.style.getPropertyValue("--haiku-page-reserve") !== reserve) {
+      document.documentElement.style.setProperty("--haiku-page-reserve", reserve);
+    }
     const h = `${Math.round(header.getBoundingClientRect().bottom)}px`;
     if (document.documentElement.style.getPropertyValue("--haiku-header-h") !== h) {
       document.documentElement.style.setProperty("--haiku-header-h", h);
@@ -1468,14 +1473,30 @@
     if (!sp) { sp = make("div", "haiku-toolbar-sep"); sp.id = "haiku-deskbar-sep"; sp.hidden = true; document.body.append(sp); }
     const form = document.querySelector('header form[role="search"]');
     if (!form) return;
-    const r = form.getBoundingClientRect();
+    let r = form.getBoundingClientRect();
     if (!r.width) return;
-    const left = Math.round(Math.min(r.right + 6, innerWidth - 70)) + "px";
+    // The button must end before the Deskbar (or the window's edge): make
+    // the search field leave just that much room. Where the field would end
+    // without the room doesn't depend on the room, so this can't seesaw.
+    const root = document.documentElement, desk = document.getElementById("haiku-deskbar");
+    const dr = desk && !root.classList.contains("haiku-deskbar-off") ? desk.getBoundingClientRect() : null;
+    // (The blue strip the Deskbar stands on starts where the page ends.)
+    const limit = (dr && dr.width ? Math.min(dr.left, root.getBoundingClientRect().right) : innerWidth) - 4;
+    const bw = b.hidden ? 72 : Math.ceil(b.getBoundingClientRect().width);
+    if (dr && dr.width) {
+      const cur = parseFloat(root.style.getPropertyValue("--haiku-deskbtn-room")) || 64;
+      const room = `${Math.max(0, Math.ceil(r.right + cur - (limit - bw - 6)))}px`;
+      if (root.style.getPropertyValue("--haiku-deskbtn-room") !== room) {
+        root.style.setProperty("--haiku-deskbtn-room", room);
+        r = form.getBoundingClientRect();
+      }
+    }
+    const left = Math.round(Math.min(r.right + 6, limit - bw, innerWidth - 70)) + "px";
     // Same row as the left-hand toolbar buttons.
     const ref = document.querySelector(".haiku-toolbar .haiku-tool");
     if (ref) { const rr = ref.getBoundingClientRect(); const t = Math.round(rr.top) + "px", h = Math.round(rr.height) + "px"; if (b.style.top !== t) b.style.top = t; if (b.style.height !== h) b.style.height = h; if (sp.style.top !== t) sp.style.top = t; if (sp.style.height !== h) sp.style.height = h; }
     if (b.style.left !== left) b.style.left = left;
-    { const sl = (Math.round(Math.min(r.right + 6, innerWidth - 70)) - 3) + "px"; if (sp.style.left !== sl) sp.style.left = sl; }
+    { const sl = (parseInt(left, 10) - 3) + "px"; if (sp.style.left !== sl) sp.style.left = sl; }
     if (b.hidden && ref) b.hidden = sp.hidden = false; // placed in both directions
     const off = document.documentElement.classList.contains("haiku-deskbar-off");
     const noun = isCompact() ? "Sidebar" : "Deskbar";
