@@ -74,9 +74,22 @@ folder use sample data (no real mail).
 | `screenshot-3-queries.png` | Screenshot 3 (a query's results and its right-click menu) |
 | `screenshot-4-query-dialog.png` | Screenshot 4 (the Edit Query dialog) |
 | `screenshot-5-compose.png` | Screenshot 5 |
-| `screenshot-6-deskbar.png` | Screenshot 6 (the Deskbar, sample data) |
+| `screenshot-6-deskbar.png` | Screenshot 6 (the app-window sidebar style of the Deskbar) |
 | `promo-440x280.png` | Small promo tile (440×280) |
 | `marquee-1400x560.png` | Marquee promo tile (1400×560, optional) |
+
+All screenshots use sample mail, never real messages. To retake them: start
+the Chrome test window at 1x (`CR_EXT=$PWD/dist/haiku-theme-for-gmail-chrome
+CR_SCALE=1 ... tools/crdrive.py serve`), set a 1280×800 viewport with
+`{"cdp":"Emulation.setDeviceMetricsOverride","params":{"width":1280,"height":800,"deviceScaleFactor":1,"mobile":false}}`,
+load `tools/store-sample.js` (send it as `{"js":"return " + its IIFE}`), then
+per scene call `haikuSample.list()`, `.chrome()`, `.message({...})` or
+`.compose({...})`. It only changes what's on screen; reload the page to undo.
+Check each picture for real names before saving. Save as 24-bit RGB PNG
+(`magick in.png -alpha off -depth 8 -define png:color-type=2 out.png`): the
+Chrome Web Store rejects 16-bit and alpha images. Firefox Add-ons takes them
+through its API (previews: POST `image`, then PATCH the caption); the Chrome
+Web Store only through its dashboard.
 
 ## Privacy practices
 
